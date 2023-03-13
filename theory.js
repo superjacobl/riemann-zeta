@@ -40,9 +40,9 @@ let tdotInverse = 4;
 let tdot = BigNumber.from(1 / tdotInverse);
 
 const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.8));
-const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
+const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1000, 4);
+const c2Cost = new ExponentialCost(1400, 3);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bCost = new ExponentialCost(1e6, Math.log2(1000));
