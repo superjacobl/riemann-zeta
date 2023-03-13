@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { CompositeCost, ExponentialCost, FirstFreeCost, LinearCost } from '../api/Costs';
+import { ExponentialCost, FirstFreeCost, LinearCost } from '../api/Costs';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
 import { Vector3 } from '../api/Vector3';
@@ -156,8 +156,8 @@ var init = () =>
     theory.createBuyAllUpgrade(1, currency, permaCosts[1]);
     theory.createAutoBuyerUpgrade(2, currency, permaCosts[2]);
 
-    theory.primaryEquationHeight = 66;
-    theory.primaryEquationScale = 0.9;
+    theory.primaryEquationHeight = 60;
+    theory.primaryEquationScale = 0.96;
     theory.secondaryEquationHeight = 72;
 
     updateAvailability();
@@ -192,16 +192,13 @@ var tick = (elapsedTime, multiplier) =>
 
 var getPrimaryEquation = () =>
 {
-    let result = `\\dot{\\rho}= \\left | \\frac{c_1c_2}
-    {\\left| \\zeta(\\frac{1}{2}+ti) \\right| +10^b}\\right|`;
-    return result;
+    return `\\dot{\\rho}=\\frac{c_1c_2}{|\\zeta(\\frac{1}{2}+ti)|+10^{b}}`;
 }
 
 var getSecondaryEquation = () =>
 {
-    let result = `\\begin{array}{c}\\zeta (s) = \\sum_{n=1}^{6}\\frac{1}{n^s}
+    return `\\begin{array}{c}\\zeta (s) = \\sum_{n=1}^{6}\\frac{1}{n^s}
     \\\\\\\\${theory.latexSymbol}=\\max\\rho\\end{array}`;
-    return result;
 }
 
 var getTertiaryEquation = () =>
