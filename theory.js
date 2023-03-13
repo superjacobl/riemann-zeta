@@ -45,7 +45,7 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 3);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bCost = new ExponentialCost(1e6, Math.log2(1000));
+const bCost = new ExponentialCost(1e5, Math.log2(1000));
 const getb = (level) => BigNumber.ONE / BigNumber.TWO.pow(level) -
 BigNumber.TWO;
 const getbTerm = (level) => BigNumber.TEN.pow(getb(level));
