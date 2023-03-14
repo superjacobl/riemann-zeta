@@ -24,7 +24,8 @@ var getDescription = (language) =>
 
     return descs[language] || descs.en;
 }
-var authors = 'Eylanding\npropfeds\n\nZeta calculations by Gen';
+var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGen, for the ' +
+'Zeta calculation code\n Sneaky, Gen & Gaunter, for maths consultation';
 var version = 0;
 
 let gameOffline = false;
@@ -34,21 +35,23 @@ let iCoord = 0;
 let quaternaryEntries = [];
 quaternaryEntries.push(new QuaternaryEntry('t', null));
 
+const HALF = BigNumber.from(0.5);
+
 // All balance parameters are aggregated for ease of access
 
-let tdotInverse = 4;
+let tdotInverse = 5;
 let tdot = BigNumber.from(1 / tdotInverse);
 
 const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.8));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 3);
+const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bCost = new ExponentialCost(1e5, Math.log2(1000));
-const getb = (level) => BigNumber.ONE / BigNumber.TWO.pow(level) -
-BigNumber.TWO;
-const getbTerm = (level) => BigNumber.TEN.pow(getb(level));
+const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const getb = (level) => (BigNumber.ONE - BigNumber.from(0.8).pow(level + 1)) *
+BigNumber.FIVE;
+const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
 // The first three zeroes, lol
 const permaCosts =
@@ -184,15 +187,16 @@ var tick = (elapsedTime, multiplier) =>
     let bonus = theory.publicationMultiplier;
 
     t += tdot * elapsedTime;
-    currency.value += dtime * c1Term * c2Term * bonus /
-    (zeta(BigNumber.from(0.5), t) + bTerm);
+    currency.value += dtime * t * c1Term * c2Term * bonus /
+    (zeta(HALF, t) + bTerm);
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
 }
 
 var getPrimaryEquation = () =>
 {
-    return `\\dot{\\rho}=\\frac{c_1c_2}{|\\zeta(\\frac{1}{2}+ti)|+10^{b}}`;
+    return `\\dot{\\rho}=\\frac{t\\times c_1c_2}
+    {|\\zeta(\\frac{1}{2}+ti)|+10^{-b}}`;
 }
 
 var getSecondaryEquation = () =>
