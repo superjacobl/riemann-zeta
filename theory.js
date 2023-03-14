@@ -228,8 +228,6 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
-    t = BigNumber.ZERO;
-
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
