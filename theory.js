@@ -35,6 +35,7 @@ let iCoord = 0;
 let quaternaryEntries = [];
 quaternaryEntries.push(new QuaternaryEntry('t', null));
 
+const graphScale = 3;
 const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
@@ -42,13 +43,13 @@ const HALF = BigNumber.from(0.5);
 let tdotInverse = 5;
 let tdot = BigNumber.from(1 / tdotInverse);
 
-const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.8));
+const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
 const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => (BigNumber.ONE - BigNumber.from(0.8).pow(level + 1)) *
 BigNumber.FIVE;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
@@ -75,16 +76,12 @@ let zeta = (s_r, s_i) =>
     let sum_r = BigNumber.ZERO;
     let sum_i = BigNumber.ZERO;
 
-    for(var i = BigNumber.ONE; i <= 6; i += BigNumber.ONE)
+    for(let i = BigNumber.ONE; i <= BigNumber.SIX; i += BigNumber.ONE)
     {
-        tmp_r = power1(i, -s_r, -s_i);
-        tmp_i = power2(i, -s_r, -s_i);
-        sum_r += tmp_r;
-        sum_i += tmp_i;
+        sum_r += power1(i, -s_r, -s_i);
+        sum_i += power2(i, -s_r, -s_i);;
     }
-    rCoord = sum_r.toNumber();
-    iCoord = sum_i.toNumber();
-    return (sum_r * sum_r + sum_i * sum_i).sqrt();
+    return [sum_r, sum_i];
 }
 
 // shin
@@ -181,14 +178,18 @@ var tick = (elapsedTime, multiplier) =>
     }
 
     let dtime = BigNumber.from(elapsedTime * multiplier);
+    t += tdot * elapsedTime;
     let c1Term = getc1(c1.level);
     let c2Term = getc2(c2.level);
+    let z = zeta(HALF, t);
+    let zTerm = (z[0] * z[0] + z[1] * z[1]).sqrt();
     let bTerm = getbTerm(b.level);
     let bonus = theory.publicationMultiplier;
 
-    t += tdot * elapsedTime;
-    currency.value += dtime * t * c1Term * c2Term * bonus /
-    (zeta(HALF, t) + bTerm);
+    currency.value += dtime * t * c1Term * c2Term * bonus / (zTerm + bTerm);
+
+    rCoord = z[0].toNumber();
+    iCoord = z[1].toNumber();
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
 }
@@ -253,8 +254,9 @@ var setInternalState = (stateStr) =>
     theory.invalidateTertiaryEquation();
 }
 
-var get3DGraphPoint = () => new Vector3(rCoord/3, -iCoord/3, t.toNumber());
+var get3DGraphPoint = () => new Vector3(rCoord / graphScale,
+-iCoord / graphScale, t.toNumber() / graphScale);
 
-var get3DGraphTranslation = () => new Vector3(0, 0, -t.toNumber());
+var get3DGraphTranslation = () => new Vector3(0, 0, -t.toNumber() / graphScale);
 
 init();
