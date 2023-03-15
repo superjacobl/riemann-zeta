@@ -30,6 +30,7 @@ var version = 0;
 
 let gameOffline = false;
 let t = BigNumber.ZERO;
+let zTerm = BigNumber.ZERO;
 let rCoord = 0;
 let iCoord = 0;
 let quaternaryEntries = [];
@@ -182,7 +183,7 @@ var tick = (elapsedTime, multiplier) =>
     let c1Term = getc1(c1.level);
     let c2Term = getc2(c2.level);
     let z = zeta(HALF, t);
-    let zTerm = (z[0] * z[0] + z[1] * z[1]).sqrt();
+    zTerm = (z[0] * z[0] + z[1] * z[1]).sqrt();
     let bTerm = getbTerm(b.level);
     let bonus = theory.publicationMultiplier;
 
@@ -197,7 +198,7 @@ var tick = (elapsedTime, multiplier) =>
 var getPrimaryEquation = () =>
 {
     return `\\dot{\\rho}=\\frac{t\\times c_1c_2}
-    {|\\zeta(\\frac{1}{2}+ti)|+10^{-b}}`;
+    {|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
 }
 
 var getSecondaryEquation = () =>
@@ -208,8 +209,7 @@ var getSecondaryEquation = () =>
 
 var getTertiaryEquation = () =>
 {
-    return `\\zeta (\\frac{1}{2}+ti)=${getCoordString(rCoord)}+
-    ${getCoordString(iCoord)}i`;
+    return `|\\zeta(\\frac{1}{2}+it)|=${zTerm}`;
 }
 
 var getQuaternaryEntries = () =>
