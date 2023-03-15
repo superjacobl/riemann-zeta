@@ -209,7 +209,7 @@ var getSecondaryEquation = () =>
 
 var getTertiaryEquation = () =>
 {
-    return `|\\zeta(\\frac{1}{2}+it)|=${zTerm}`;
+    return `|\\zeta(\\frac{1}{2}+it)|=${zTerm.toString(3)}`;
 }
 
 var getQuaternaryEntries = () =>
