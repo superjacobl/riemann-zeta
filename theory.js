@@ -41,7 +41,7 @@ const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
-const resolution = 10;
+const resolution = 5;
 
 const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
@@ -57,9 +57,9 @@ const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 // The first three zeroes, lol
 const permaCosts =
 [
+    BigNumber.TEN.pow(9),
     BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(21),
-    BigNumber.TEN.pow(25)
+    BigNumber.TEN.pow(21)
 ];
 
 const milestoneCost = new LinearCost(25, 25);
@@ -369,7 +369,7 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
-    // t = 0;
+    t = 0;
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
