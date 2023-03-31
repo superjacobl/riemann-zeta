@@ -29,20 +29,19 @@ var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGen, for the ' +
 var version = 0;
 
 let gameOffline = false;
-let t = BigNumber.ZERO;
+let t = 0;
+let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
 let rCoord = 0;
 let iCoord = 0;
-let quaternaryEntries = [];
-quaternaryEntries.push(new QuaternaryEntry('t', null));
+let quaternaryEntries = [new QuaternaryEntry('t', null)];
 
 const graphScale = 3;
 const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
-let tdotInverse = 5;
-let tdot = BigNumber.from(1 / tdotInverse);
+const resolution = 10;
 
 const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
@@ -50,9 +49,9 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bCost = new ExponentialCost(1e6, Math.log2(1e6));
-const getb = (level) => (BigNumber.ONE - BigNumber.from(0.8).pow(level + 1)) *
-BigNumber.FIVE;
+const bMaxLevel = 10;
+const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
 // The first three zeroes, lol
@@ -71,32 +70,174 @@ var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
 
-// Gen
-let zeta = (s_r, s_i) =>
+let even = (n) =>
 {
-    let sum_r = BigNumber.ZERO;
-    let sum_i = BigNumber.ZERO;
+    if(n % 2 == 0)
+        return 1;
+    else
+        return(-1);
+}
 
-    for(let i = BigNumber.ONE; i <= BigNumber.SIX; i += BigNumber.ONE)
+let theta = (t) =>
+{
+    return (t/2.0*Math.log(t/2.0/Math.PI) - t/2.0 - Math.PI/8.0 + 1.0/48.0/t +
+    7.0/5760.0/t/t/t);
+}
+
+let C = (n, z) =>
+{
+    if(n == 0)
+        return (+.38268343236508977173 * Math.pow(z, 0.0) 
+                +.43724046807752044936 * Math.pow(z, 2.0)
+                +.13237657548034352332 * Math.pow(z, 4.0)
+                -.01360502604767418865 * Math.pow(z, 6.0)
+                -.01356762197010358089 * Math.pow(z, 8.0)
+                -.00162372532314446528 * Math.pow(z,10.0)
+                +.00029705353733379691 * Math.pow(z,12.0)
+                +.00007943300879521470 * Math.pow(z,14.0)
+                +.00000046556124614505 * Math.pow(z,16.0)
+                -.00000143272516309551 * Math.pow(z,18.0)
+                -.00000010354847112313 * Math.pow(z,20.0)
+                +.00000001235792708386 * Math.pow(z,22.0)
+                +.00000000178810838580 * Math.pow(z,24.0)
+                -.00000000003391414390 * Math.pow(z,26.0)
+                -.00000000001632663390 * Math.pow(z,28.0)
+                -.00000000000037851093 * Math.pow(z,30.0)
+                +.00000000000009327423 * Math.pow(z,32.0)
+                +.00000000000000522184 * Math.pow(z,34.0)
+                -.00000000000000033507 * Math.pow(z,36.0)
+                -.00000000000000003412 * Math.pow(z,38.0)
+                +.00000000000000000058 * Math.pow(z,40.0)
+                +.00000000000000000015 * Math.pow(z,42.0));
+    else if(n == 1)
+        return (-.02682510262837534703 * Math.pow(z, 1.0) 
+                +.01378477342635185305 * Math.pow(z, 3.0)
+                +.03849125048223508223 * Math.pow(z, 5.0)
+                +.00987106629906207647 * Math.pow(z, 7.0)
+                -.00331075976085840433 * Math.pow(z, 9.0)
+                -.00146478085779541508 * Math.pow(z,11.0)
+                -.00001320794062487696 * Math.pow(z,13.0)
+                +.00005922748701847141 * Math.pow(z,15.0)
+                +.00000598024258537345 * Math.pow(z,17.0)
+                -.00000096413224561698 * Math.pow(z,19.0)
+                -.00000018334733722714 * Math.pow(z,21.0)
+                +.00000000446708756272 * Math.pow(z,23.0)
+                +.00000000270963508218 * Math.pow(z,25.0)
+                +.00000000007785288654 * Math.pow(z,27.0)
+                -.00000000002343762601 * Math.pow(z,29.0)
+                -.00000000000158301728 * Math.pow(z,31.0)
+                +.00000000000012119942 * Math.pow(z,33.0)
+                +.00000000000001458378 * Math.pow(z,35.0)
+                -.00000000000000028786 * Math.pow(z,37.0)
+                -.00000000000000008663 * Math.pow(z,39.0)
+                -.00000000000000000084 * Math.pow(z,41.0)
+                +.00000000000000000036 * Math.pow(z,43.0)
+                +.00000000000000000001 * Math.pow(z,45.0));
+    else if(n == 2)
+        return (+.00518854283029316849 * Math.pow(z, 0.0)
+                +.00030946583880634746 * Math.pow(z, 2.0)
+                -.01133594107822937338 * Math.pow(z, 4.0)
+                +.00223304574195814477 * Math.pow(z, 6.0)
+                +.00519663740886233021 * Math.pow(z, 8.0)
+                +.00034399144076208337 * Math.pow(z,10.0) 
+                -.00059106484274705828 * Math.pow(z,12.0) 
+                -.00010229972547935857 * Math.pow(z,14.0) 
+                +.00002088839221699276 * Math.pow(z,16.0) 
+                +.00000592766549309654 * Math.pow(z,18.0) 
+                -.00000016423838362436 * Math.pow(z,20.0)
+                -.00000015161199700941 * Math.pow(z,22.0)
+                -.00000000590780369821 * Math.pow(z,24.0)
+                +.00000000209115148595 * Math.pow(z,26.0)
+                +.00000000017815649583 * Math.pow(z,28.0)
+                -.00000000001616407246 * Math.pow(z,30.0)
+                -.00000000000238069625 * Math.pow(z,32.0)
+                +.00000000000005398265 * Math.pow(z,34.0)
+                +.00000000000001975014 * Math.pow(z,36.0)
+                +.00000000000000023333 * Math.pow(z,38.0)
+                -.00000000000000011188 * Math.pow(z,40.0)
+                -.00000000000000000416 * Math.pow(z,42.0)
+                +.00000000000000000044 * Math.pow(z,44.0)
+                +.00000000000000000003 * Math.pow(z,46.0));
+    else if(n == 3) 
+        return (-.00133971609071945690 * Math.pow(z, 1.0)
+                +.00374421513637939370 * Math.pow(z, 3.0)
+                -.00133031789193214681 * Math.pow(z, 5.0)
+                -.00226546607654717871 * Math.pow(z, 7.0)
+                +.00095484999985067304 * Math.pow(z, 9.0)
+                +.00060100384589636039 * Math.pow(z,11.0)
+                -.00010128858286776622 * Math.pow(z,13.0)
+                -.00006865733449299826 * Math.pow(z,15.0)
+                +.00000059853667915386 * Math.pow(z,17.0)
+                +.00000333165985123995 * Math.pow(z,19.0)
+                +.00000021919289102435 * Math.pow(z,21.0)
+                -.00000007890884245681 * Math.pow(z,23.0)
+                -.00000000941468508130 * Math.pow(z,25.0)
+                +.00000000095701162109 * Math.pow(z,27.0)
+                +.00000000018763137453 * Math.pow(z,29.0)
+                -.00000000000443783768 * Math.pow(z,31.0)
+                -.00000000000224267385 * Math.pow(z,33.0)
+                -.00000000000003627687 * Math.pow(z,35.0)
+                +.00000000000001763981 * Math.pow(z,37.0)
+                +.00000000000000079608 * Math.pow(z,39.0)
+                -.00000000000000009420 * Math.pow(z,41.0)
+                -.00000000000000000713 * Math.pow(z,43.0)
+                +.00000000000000000033 * Math.pow(z,45.0)
+                +.00000000000000000004 * Math.pow(z,47.0));
+    else
+        return (+.00046483389361763382 * Math.pow(z, 0.0)
+                -.00100566073653404708 * Math.pow(z, 2.0)
+                +.00024044856573725793 * Math.pow(z, 4.0)
+                +.00102830861497023219 * Math.pow(z, 6.0)
+                -.00076578610717556442 * Math.pow(z, 8.0)
+                -.00020365286803084818 * Math.pow(z,10.0)
+                +.00023212290491068728 * Math.pow(z,12.0)
+                +.00003260214424386520 * Math.pow(z,14.0)
+                -.00002557906251794953 * Math.pow(z,16.0)
+                -.00000410746443891574 * Math.pow(z,18.0)
+                +.00000117811136403713 * Math.pow(z,20.0)
+                +.00000024456561422485 * Math.pow(z,22.0)
+                -.00000002391582476734 * Math.pow(z,24.0)
+                -.00000000750521420704 * Math.pow(z,26.0)
+                +.00000000013312279416 * Math.pow(z,28.0)
+                +.00000000013440626754 * Math.pow(z,30.0)
+                +.00000000000351377004 * Math.pow(z,32.0)
+                -.00000000000151915445 * Math.pow(z,34.0)
+                -.00000000000008915418 * Math.pow(z,36.0)
+                +.00000000000001119589 * Math.pow(z,38.0)
+                +.00000000000000105160 * Math.pow(z,40.0)
+                -.00000000000000005179 * Math.pow(z,42.0)
+                -.00000000000000000807 * Math.pow(z,44.0)
+                +.00000000000000000011 * Math.pow(z,46.0)
+                +.00000000000000000004 * Math.pow(z,48.0));
+}
+
+let zeta = (t, n) =>
+{
+    let ZZ = 0;
+    let R = 0;
+    let j = 1;
+    let k = 0;
+    let N = Math.sqrt(t/(2.0 * Math.PI));
+    let p = Math.sqrt(t/(2.0 * Math.PI)) - N;
+
+    while(j <= N)
     {
-        sum_r += power1(i, -s_r, -s_i);
-        sum_i += power2(i, -s_r, -s_i);;
+        ZZ = ZZ + 1.0/Math.sqrt(j) *
+        Math.cos((theta(t) - t*Math.log(j)) % 2.0*Math.PI);
+        ++j;
     }
-    return [sum_r, sum_i];
-}
+    ZZ = 2.0 * ZZ;
 
-// shin
-let power1 = (a, b, c) =>
-{
-    let arg = c * a.log();
-    return a.pow(b) * arg.cos();
-}
+    while (k <= n)
+    {
+        R = R + C(k,2.0*p-1.0) *
+        Math.pow(2.0*Math.PI/t, k*0.5);
+        ++k;
+    }
+    R = even(N-1) * Math.pow(2.0 * Math.PI / t, 0.25) * R;
 
-// impact
-let power2 = (a, b, c) =>
-{
-    let arg = c * a.log();
-    return a.pow(b) * arg.sin();
+    let z = ZZ + R;
+    return [z*Math.cos(theta(t)), -z*Math.sin(theta(t)), z];
 }
 
 /**
@@ -146,11 +287,12 @@ var init = () =>
     */
     {
         let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `b=${getb(level).toString(3)}`;
+        let getInfo = (level) => `b=${getb(level).toString(1)}`;
         b = theory.createUpgrade(3, currency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
         getInfo(b.level + amount));
+        b.maxLevel = bMaxLevel;
     }
     
     theory.createPublicationUpgrade(0, currency, permaCosts[0]);
@@ -178,19 +320,21 @@ var tick = (elapsedTime, multiplier) =>
         gameOffline = false;
     }
 
-    let dtime = BigNumber.from(elapsedTime * multiplier);
-    t += tdot * elapsedTime;
+    t += 1/resolution * elapsedTime;
+
+    let dTime = BigNumber.from(elapsedTime * multiplier);
+    tTerm = BigNumber.from(t);
     let c1Term = getc1(c1.level);
     let c2Term = getc2(c2.level);
-    let z = zeta(HALF, t);
-    zTerm = (z[0] * z[0] + z[1] * z[1]).sqrt();
+    let z = zeta(t, 0);
+    rCoord = z[0];
+    iCoord = z[1];
+    zTerm = BigNumber.from(z[2]).abs();
     let bTerm = getbTerm(b.level);
     let bonus = theory.publicationMultiplier;
 
-    currency.value += dtime * t * c1Term * c2Term * bonus / (zTerm + bTerm);
+    currency.value += dTime * tTerm * c1Term * c2Term * bonus / (zTerm + bTerm);
 
-    rCoord = z[0].toNumber();
-    iCoord = z[1].toNumber();
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
 }
@@ -214,7 +358,7 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t;
+    quaternaryEntries[0].value = t.toFixed(3);
 
     return quaternaryEntries;
 }
@@ -229,6 +373,7 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
+    t = 0;
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
@@ -238,7 +383,7 @@ var postPublish = () =>
 var getInternalState = () => JSON.stringify
 ({
     version: version,
-    t: t.toBase64String()
+    t: t
 })
 
 var setInternalState = (stateStr) =>
@@ -248,15 +393,15 @@ var setInternalState = (stateStr) =>
 
     let state = JSON.parse(stateStr);
     if('t' in state)
-        t = BigNumber.fromBase64String(state.t);
+        t = state.t;
 
     theory.invalidatePrimaryEquation();
     theory.invalidateTertiaryEquation();
 }
 
 var get3DGraphPoint = () => new Vector3(rCoord / graphScale,
--iCoord / graphScale, t.toNumber() / graphScale);
+-iCoord / graphScale, t);
 
-var get3DGraphTranslation = () => new Vector3(0, 0, -t.toNumber() / graphScale);
+var get3DGraphTranslation = () => new Vector3(0, 0, -t);
 
 init();
