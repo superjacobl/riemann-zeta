@@ -36,7 +36,7 @@ let rCoord = 0;
 let iCoord = 0;
 let quaternaryEntries = [new QuaternaryEntry('t', null)];
 
-const graphScale = 3;
+const scale = 4;
 const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
@@ -395,9 +395,9 @@ var setInternalState = (stateStr) =>
     theory.invalidateTertiaryEquation();
 }
 
-var get3DGraphPoint = () => new Vector3(rCoord / graphScale,
--iCoord / graphScale, t / graphScale);
+var get3DGraphPoint = () => new Vector3(rCoord / scale, -iCoord / scale,
+t / scale);
 
-var get3DGraphTranslation = () => new Vector3(0, 0, -t / graphScale);
+var get3DGraphTranslation = () => new Vector3(0, 0, -t / scale);
 
 init();
