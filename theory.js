@@ -215,29 +215,25 @@ let zeta = (t, n) =>
 {
     let ZZ = 0;
     let R = 0;
-    let j = 1;
     let k = 0;
     let N = Math.sqrt(t/(2.0 * Math.PI));
     let p = Math.sqrt(t/(2.0 * Math.PI)) - N;
+    let th = theta(t);
 
-    while(j <= N)
+    for(let j = 1; j <= N; ++j)
     {
-        ZZ = ZZ + 1.0/Math.sqrt(j) *
-        Math.cos((theta(t) - t*Math.log(j)) % 2.0*Math.PI);
-        ++j;
+        ZZ += Math.cos((th - t*Math.log(j))) / Math.sqrt(j);
     }
     ZZ = 2.0 * ZZ;
 
-    while (k <= n)
+    for(k = 0; k <= n; ++k)
     {
-        R = R + C(k,2.0*p-1.0) *
-        Math.pow(2.0*Math.PI/t, k*0.5);
-        ++k;
+        R = R + C(k,2.0*p-1.0) * Math.pow(2.0*Math.PI/t, k*0.5);
     }
     R = even(N-1) * Math.pow(2.0 * Math.PI / t, 0.25) * R;
 
     let z = ZZ + R;
-    return [z*Math.cos(theta(t)), -z*Math.sin(theta(t)), z];
+    return [z*Math.cos(th), -z*Math.sin(th), z];
 }
 
 /**
@@ -326,7 +322,7 @@ var tick = (elapsedTime, multiplier) =>
     tTerm = BigNumber.from(t);
     let c1Term = getc1(c1.level);
     let c2Term = getc2(c2.level);
-    let z = zeta(t, 0);
+    let z = zeta(t, 4);
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
@@ -347,7 +343,7 @@ var getPrimaryEquation = () =>
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta (s) = \\sum_{n=1}^{6}\\frac{1}{n^s}
+    return `\\begin{array}{c}\\zeta(s)=\\sum_{n=1}^{\\infty}\\frac{1}{n^s}
     \\\\\\\\${theory.latexSymbol}=\\max\\rho\\end{array}`;
 }
 
@@ -358,7 +354,7 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t.toFixed(3);
+    quaternaryEntries[0].value = t.toFixed(2);
 
     return quaternaryEntries;
 }
