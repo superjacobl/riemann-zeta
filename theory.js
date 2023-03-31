@@ -369,7 +369,7 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
-    t = 0;
+    // t = 0;
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
@@ -396,8 +396,8 @@ var setInternalState = (stateStr) =>
 }
 
 var get3DGraphPoint = () => new Vector3(rCoord / graphScale,
--iCoord / graphScale, t);
+-iCoord / graphScale, t / graphScale);
 
-var get3DGraphTranslation = () => new Vector3(0, 0, -t);
+var get3DGraphTranslation = () => new Vector3(0, 0, -t / graphScale);
 
 init();
