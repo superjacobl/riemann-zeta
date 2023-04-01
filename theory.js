@@ -49,7 +49,7 @@ const HALF = BigNumber.from(0.5);
 // All balance parameters are aggregated for ease of access
 
 const resolution = 5;
-const speedMaxLevel = 2;
+const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
 const getZetaExp = (level) => HALF.pow(level);
 
@@ -259,7 +259,7 @@ let zeta = (t, n) =>
 
     for(let j = 1; j <= N; ++j)
     {
-        ZZ += Math.cos((th - t*Math.log(j))) / Math.sqrt(j);
+        ZZ += Math.cos(th - t*Math.log(j)) / Math.sqrt(j);
     }
     ZZ = 2.0 * ZZ;
 
@@ -285,7 +285,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var c1ExpMs, speedMs, angleMs, blackholeMs, warpMs;
 
-var c1, c2, b;
+var c1, c2, b, w;
 
 var normCurrency, angleCurrency;
 
@@ -387,6 +387,7 @@ var init = () =>
 
 var updateAvailability = () =>
 {
+    // w.isAvailable = angleMs.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && angleMs.level > 0) || !index;
@@ -409,10 +410,11 @@ var tick = (elapsedTime, multiplier) =>
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
+    // let z = [Math.cos(t), Math.cos(t), t];
     if(angleMs.level)
     {
         wTerm = BigNumber.from((z[0]*(z[1]-iCoord) - z[1]*(z[0]-rCoord)) /
-        z[2]).abs();
+        (z[2] * z[2])).abs();
         angleCurrency.value += wTerm * bonus;
     }
     rCoord = z[0];
@@ -438,8 +440,8 @@ var getPrimaryEquation = () =>
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\omega}=\\Im\\left|\\frac{d\\zeta}{dt}\\right|`;
-    theory.primaryEquationHeight = 84;
+    let omegaPart = `\\dot{\\omega}=\\left|\\frac{d\\theta(\\zeta(s))}{dt}\\right|`;
+    theory.primaryEquationHeight = 88;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
