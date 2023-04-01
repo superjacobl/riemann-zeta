@@ -8,11 +8,7 @@
 
 ## Design
 
-For currencies, I currently have two ideas floating around:
-
-- Decoupling zeta into Re and Im, but it will diverge from our current |z| model.
-- Since we have the modulus of z for a currency, how about another for the argument (angle)? 
-or angular velocity (small omega)
+### Mechanics
 
 - Ok so, random crazy idea, make tdot be a function of zeta(s) so that when zeta(s) is big dot is higher and when zeta(s) is small tdot is lower 
     - Something like tdot = (9 * zeta(s) + 2 ) / 200
@@ -23,6 +19,13 @@ or angular velocity (small omega)
   2. I also envisioned it as an expensive upgrade, as it feels like it could get out of hand. 
   3. It doesn't have to be 2^n it could be 3^n or 10^n or whatever
 
+### Currencies
 
-- Milestones:
+- Decoupling zeta into Re and Im, but it will diverge from our current |z| model.
+- Since we have the modulus of z for a currency, how about another for the argument (angle)? 
+or angular velocity (small omega)
+
+### Milestones
+
   - Increase t_dot by 4x, but sqrts the |z| portion
+  - Unlock angular velocity currency
