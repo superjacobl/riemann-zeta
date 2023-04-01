@@ -1,5 +1,6 @@
 import { BigNumber } from '../api/BigNumber';
 import { ExponentialCost, FirstFreeCost, LinearCost } from '../api/Costs';
+import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
 import { Vector3 } from '../api/Vector3';
@@ -44,6 +45,9 @@ const HALF = BigNumber.from(0.5);
 
 const resolution = 5;
 
+const c1ExpMaxLevel = 3;
+const c1ExpInc = 0.07;
+const getc1Exp = (level) => BigNumber.ONE + BigNumber.from(c1ExpInc * level);
 const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
@@ -62,7 +66,7 @@ const permaCosts =
     BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new LinearCost(25, 25);
+const milestoneCost = new LinearCost(20, 20);
 
 const tauRate = 1;
 const pubExp = 0.2;
@@ -70,18 +74,42 @@ var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
 
+const locStrings =
+{
+    en:
+    {
+        a: 'a'
+    }
+};
+
+const menuLang = Localization.language;
+/**
+ * Returns a localised string.
+ * @param {string} name the internal name of the string.
+ * @returns {string} the string.
+ */
+let getLoc = (name, lang = menuLang) =>
+{
+    if(lang in locStrings && name in locStrings[lang])
+        return locStrings[lang][name];
+
+    if(name in locStrings.en)
+        return locStrings.en[name];
+    
+    return `String missing: ${lang}.${name}`;
+}
+
 let even = (n) =>
 {
     if(n % 2 == 0)
         return 1;
     else
-        return(-1);
+        return -1;
 }
 
 let theta = (t) =>
 {
-    return (t/2.0*Math.log(t/2.0/Math.PI) - t/2.0 - Math.PI/8.0 + 1.0/48.0/t +
-    7.0/5760.0/t/t/t);
+    return t/2*Math.log(t/2/Math.PI) - t/2 - Math.PI/8 + 1/48/t + 7/5760/t/t/t;
 }
 
 let C = (n, z) =>
@@ -215,7 +243,6 @@ let zeta = (t, n) =>
 {
     let ZZ = 0;
     let R = 0;
-    let k = 0;
     let N = Math.sqrt(t/(2.0 * Math.PI));
     let p = Math.sqrt(t/(2.0 * Math.PI)) - N;
     let th = theta(t);
@@ -226,7 +253,7 @@ let zeta = (t, n) =>
     }
     ZZ = 2.0 * ZZ;
 
-    for(k = 0; k <= n; ++k)
+    for(let k = 0; k <= n; ++k)
     {
         R = R + C(k,2.0*p-1.0) * Math.pow(2.0*Math.PI/t, k*0.5);
     }
@@ -246,6 +273,8 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
+var c1ExpMs, speedMs, angleMs, blackholeMs, warpMs;
+
 var c1, c2, b;
 
 var currency;
@@ -257,9 +286,14 @@ var init = () =>
     A sea one.
     */
     {
+        
         let getDesc = (level) => `c_1=${getc1(level).toString(0)}`;
         let getInfo = (level) =>
         {
+            if(c1ExpMs.level > 0)
+                return `c_1^{${getc1Exp(c1ExpMs.level)}}=
+                ${getc1(level).pow(getc1Exp(c1ExpMs.level)).toString()}`;
+
             return getDesc(level);
         }
         c1 = theory.createUpgrade(1, currency, c1Cost);
@@ -295,6 +329,18 @@ var init = () =>
     theory.createBuyAllUpgrade(1, currency, permaCosts[1]);
     theory.createAutoBuyerUpgrade(2, currency, permaCosts[2]);
 
+    theory.setMilestoneCost(milestoneCost);
+    /* c1 exponent
+    Standard exponent upgrade.
+    */
+    {
+        c1ExpMs = theory.createMilestoneUpgrade(0, c1ExpMaxLevel);
+        c1ExpMs.description = Localization.getUpgradeIncCustomExpDesc('c_1',
+        c1ExpInc);
+        c1ExpMs.info = Localization.getUpgradeIncCustomExpInfo('c_1', c1ExpInc);
+        c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+    }
+
     theory.primaryEquationHeight = 60;
     theory.primaryEquationScale = 0.96;
     theory.secondaryEquationHeight = 72;
@@ -320,7 +366,7 @@ var tick = (elapsedTime, multiplier) =>
 
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
-    let c1Term = getc1(c1.level);
+    let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
     rCoord = z[0];
@@ -337,7 +383,8 @@ var tick = (elapsedTime, multiplier) =>
 
 var getPrimaryEquation = () =>
 {
-    return `\\dot{\\rho}=\\frac{t\\times c_1c_2}
+    return `\\dot{\\rho}=\\frac{t\\times c_1
+    ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2}
     {|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
 }
 
