@@ -44,6 +44,9 @@ const HALF = BigNumber.from(0.5);
 // All balance parameters are aggregated for ease of access
 
 const resolution = 5;
+const speedMaxLevel = 2;
+const getSpeed = (level) => 1 << (level * 2);
+const getZetaExp = (level) => HALF.pow(level);
 
 const c1ExpMaxLevel = 3;
 const c1ExpInc = 0.07;
@@ -78,7 +81,9 @@ const locStrings =
 {
     en:
     {
-        a: 'a'
+        speed: '\\text{speed}',
+        zExp: '{{{0}}}\\text{{ exponent}}',
+        half: '\\text{half}'
     }
 };
 
@@ -340,6 +345,18 @@ var init = () =>
         c1ExpMs.info = Localization.getUpgradeIncCustomExpInfo('c_1', c1ExpInc);
         c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
+    /* Speed/exp
+    Tradeoff.
+    */
+    {
+        speedMs = theory.createMilestoneUpgrade(1, speedMaxLevel);
+        speedMs.description =
+        `${Localization.getUpgradeIncCustomDesc(getLoc('speed'),
+        `${getSpeed(1)}\\times`)}; ${Localization.getUpgradeDecCustomDesc(
+        Localization.format(getLoc('zExp'), '|\\zeta(s)|'), getLoc('half'))}`;
+        speedMs.info = speedMs.description;
+        speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+    }
 
     theory.primaryEquationHeight = 60;
     theory.primaryEquationScale = 0.96;
@@ -362,7 +379,7 @@ var tick = (elapsedTime, multiplier) =>
         gameOffline = false;
     }
 
-    t += 1/resolution * elapsedTime;
+    t += getSpeed(speedMs.level) / resolution * elapsedTime;
 
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
@@ -371,7 +388,7 @@ var tick = (elapsedTime, multiplier) =>
     let z = zeta(t, 4);
     rCoord = z[0];
     iCoord = z[1];
-    zTerm = BigNumber.from(z[2]).abs();
+    zTerm = BigNumber.from(z[2]).abs().pow(getZetaExp(speedMs.level));
     let bTerm = getbTerm(b.level);
     let bonus = theory.publicationMultiplier;
 
@@ -385,7 +402,9 @@ var getPrimaryEquation = () =>
 {
     return `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2}
-    {|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    {|\\zeta(\\frac{1}{2}+it)|
+    ${speedMs.level ? `^{${getZetaExp(speedMs.level).toString(speedMs.level)}}`
+    : ''}+10^{-b}}`;
 }
 
 var getSecondaryEquation = () =>
