@@ -24,8 +24,9 @@ var getDescription = (language) =>
 
     return descs[language] || descs.en;
 }
-var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGen, for the ' +
-'Zeta calculation code\n Sneaky, Gen & Gaunter, for maths consultation';
+var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
+'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
+'for maths consultation';
 var version = 0;
 
 let gameOffline = false;
@@ -50,11 +51,10 @@ const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 10;
-const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-// The first three zeroes, lol
 const permaCosts =
 [
     BigNumber.TEN.pow(9),
