@@ -34,9 +34,14 @@ let gameOffline = false;
 let t = 0;
 let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
+let wTerm = BigNumber.ZERO;
 let rCoord = 0;
 let iCoord = 0;
-let quaternaryEntries = [new QuaternaryEntry('t', null)];
+let quaternaryEntries =
+[
+    new QuaternaryEntry('t', null),
+    new QuaternaryEntry('\\dot{\\omega}', null)
+];
 
 const scale = 4;
 const HALF = BigNumber.from(0.5);
@@ -282,11 +287,12 @@ var c1ExpMs, speedMs, angleMs, blackholeMs, warpMs;
 
 var c1, c2, b;
 
-var currency;
+var normCurrency, angleCurrency;
 
 var init = () =>
 {
-    currency = theory.createCurrency();
+    normCurrency = theory.createCurrency();
+    angleCurrency = theory.createCurrency('ω', '\\omega');
     /* c1
     A sea one.
     */
@@ -301,7 +307,7 @@ var init = () =>
 
             return getDesc(level);
         }
-        c1 = theory.createUpgrade(1, currency, c1Cost);
+        c1 = theory.createUpgrade(1, normCurrency, c1Cost);
         c1.getDescription = (_) => Utils.getMath(getDesc(c1.level));
         c1.getInfo = (amount) => Utils.getMathTo(getInfo(c1.level),
         getInfo(c1.level + amount));
@@ -312,7 +318,7 @@ var init = () =>
     {
         let getDesc = (level) => `c_2=2^{${level}}`;
         let getInfo = (level) => `c_2=${getc2(level).toString(0)}`;
-        c2 = theory.createUpgrade(2, currency, c2Cost);
+        c2 = theory.createUpgrade(2, normCurrency, c2Cost);
         c2.getDescription = (_) => Utils.getMath(getDesc(c2.level));
         c2.getInfo = (amount) => Utils.getMathTo(getInfo(c2.level),
         getInfo(c2.level + amount));
@@ -323,16 +329,16 @@ var init = () =>
     {
         let getDesc = (level) => getInfo(level);
         let getInfo = (level) => `b=${getb(level).toString(1)}`;
-        b = theory.createUpgrade(3, currency, bCost);
+        b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
         getInfo(b.level + amount));
         b.maxLevel = bMaxLevel;
     }
     
-    theory.createPublicationUpgrade(0, currency, permaCosts[0]);
-    theory.createBuyAllUpgrade(1, currency, permaCosts[1]);
-    theory.createAutoBuyerUpgrade(2, currency, permaCosts[2]);
+    theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
+    theory.createBuyAllUpgrade(1, normCurrency, permaCosts[1]);
+    theory.createAutoBuyerUpgrade(2, normCurrency, permaCosts[2]);
 
     theory.setMilestoneCost(milestoneCost);
     /* c1 exponent
@@ -345,11 +351,26 @@ var init = () =>
         c1ExpMs.info = Localization.getUpgradeIncCustomExpInfo('c_1', c1ExpInc);
         c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
+    /* Unlock omega
+    Benefits from speed/exp.
+    */
+    {
+        angleMs = theory.createMilestoneUpgrade(1, 1);
+        angleMs.description = Localization.getUpgradeUnlockDesc(
+        angleCurrency.symbol);
+        angleMs.info = Localization.getUpgradeUnlockInfo(angleCurrency.symbol);
+        angleMs.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            theory.invalidateQuaternaryValues();
+            updateAvailability();
+        }
+    }
     /* Speed/exp
     Tradeoff.
     */
     {
-        speedMs = theory.createMilestoneUpgrade(1, speedMaxLevel);
+        speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
         speedMs.description =
         `${Localization.getUpgradeIncCustomDesc(getLoc('speed'),
         `${getSpeed(1)}\\times`)}; ${Localization.getUpgradeDecCustomDesc(
@@ -358,9 +379,8 @@ var init = () =>
         speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
 
-    theory.primaryEquationHeight = 60;
     theory.primaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 72;
+    theory.secondaryEquationHeight = 42;
 
     updateAvailability();
 }
@@ -368,6 +388,8 @@ var init = () =>
 var updateAvailability = () =>
 {
 }
+
+var isCurrencyVisible = (index) => (index && angleMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
@@ -383,16 +405,22 @@ var tick = (elapsedTime, multiplier) =>
 
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
+    let bonus = theory.publicationMultiplier;
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
+    if(angleMs.level)
+    {
+        wTerm = BigNumber.from((z[0]*(z[1]-iCoord) - z[1]*(z[0]-rCoord)) /
+        z[2]).abs();
+        angleCurrency.value += wTerm * bonus;
+    }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs().pow(getZetaExp(speedMs.level));
     let bTerm = getbTerm(b.level);
-    let bonus = theory.publicationMultiplier;
 
-    currency.value += dTime * tTerm * c1Term * c2Term * bonus / (zTerm + bTerm);
+    normCurrency.value += dTime*tTerm*c1Term*c2Term*bonus / (zTerm+bTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -400,17 +428,25 @@ var tick = (elapsedTime, multiplier) =>
 
 var getPrimaryEquation = () =>
 {
-    return `\\dot{\\rho}=\\frac{t\\times c_1
+    let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2}
     {|\\zeta(\\frac{1}{2}+it)|
     ${speedMs.level ? `^{${getZetaExp(speedMs.level).toString(speedMs.level)}}`
     : ''}+10^{-b}}`;
+    if(!angleMs.level)
+    {
+        theory.primaryEquationHeight = 60;
+        return rhoPart;
+    }
+    let omegaPart = `\\dot{\\omega}=\\Im\\left|\\frac{d\\zeta}{dt}\\right|`;
+    theory.primaryEquationHeight = 84;
+    return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta(s)=\\sum_{n=1}^{\\infty}\\frac{1}{n^s}
-    \\\\\\\\${theory.latexSymbol}=\\max\\rho\\end{array}`;
+    return `\\begin{array}{c}\\zeta(s)=\\sum_{n=1}^{\\infty}\\frac{1}{n^s},&
+    ${theory.latexSymbol}=\\max\\rho\\end{array}`;
 }
 
 var getTertiaryEquation = () =>
@@ -421,16 +457,17 @@ var getTertiaryEquation = () =>
 var getQuaternaryEntries = () =>
 {
     quaternaryEntries[0].value = t.toFixed(2);
-
+    if(angleMs.level)
+        quaternaryEntries[1].value = wTerm;
     return quaternaryEntries;
 }
 
-var getTau = () => currency.value.pow(tauRate);
+var getTau = () => normCurrency.value.pow(tauRate);
 
 var getCurrencyFromTau = (tau) =>
 [
     tau.max(BigNumber.ONE).pow(BigNumber.ONE / tauRate),
-    currency.symbol
+    normCurrency.symbol
 ];
 
 var postPublish = () =>
