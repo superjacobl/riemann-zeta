@@ -34,13 +34,13 @@ let gameOffline = false;
 let t = 0;
 let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
-let wTerm = BigNumber.ZERO;
+let derivTerm = BigNumber.ZERO;
 let rCoord = 0;
 let iCoord = 0;
 let quaternaryEntries =
 [
     new QuaternaryEntry('t', null),
-    new QuaternaryEntry('\\dot{\\omega}', null)
+    new QuaternaryEntry('\\zeta \'', null)
 ];
 
 const scale = 4;
@@ -296,12 +296,12 @@ var c1ExpMs, speedMs, angleMs, blackholeMs, warpMs;
 
 var c1, c2, b, w;
 
-var normCurrency, angleCurrency;
+var normCurrency, derivCurrency;
 
 var init = () =>
 {
     normCurrency = theory.createCurrency();
-    angleCurrency = theory.createCurrency('ω', '\\omega');
+    derivCurrency = theory.createCurrency('ρ\'', '\\rho \'');
     /* c1
     A sea one.
     */
@@ -366,8 +366,8 @@ var init = () =>
     {
         angleMs = theory.createMilestoneUpgrade(1, 1);
         angleMs.description = Localization.getUpgradeUnlockDesc(
-        angleCurrency.symbol);
-        angleMs.info = Localization.getUpgradeUnlockInfo(angleCurrency.symbol);
+        derivCurrency.symbol);
+        angleMs.info = Localization.getUpgradeUnlockInfo(derivCurrency.symbol);
         angleMs.boughtOrRefunded = (_) =>
         {
             theory.invalidatePrimaryEquation();
@@ -412,7 +412,8 @@ var tick = (elapsedTime, multiplier) =>
         gameOffline = false;
     }
 
-    t += getSpeed(speedMs.level) / resolution * elapsedTime;
+    let dt = getSpeed(speedMs.level) / resolution * elapsedTime;
+    t += dt;
 
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
@@ -423,9 +424,10 @@ var tick = (elapsedTime, multiplier) =>
     // let z = [Math.cos(t), Math.cos(t), t];
     if(angleMs.level)
     {
-        wTerm = BigNumber.from((z[0]*(z[1]-iCoord) - z[1]*(z[0]-rCoord)) /
-        (z[2] * z[2])).abs();
-        angleCurrency.value += wTerm * bonus;
+        let dr = z[0] - rCoord;
+        let di = z[1] - iCoord;
+        derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
+        derivCurrency.value += derivTerm * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
@@ -450,7 +452,7 @@ var getPrimaryEquation = () =>
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\omega}=\\frac{|d\\theta(\\zeta(s))|}{dt}`;
+    let omegaPart = `\\dot{\\rho '}=\\frac{|d\\zeta(s)|}{dt}`;
     theory.primaryEquationHeight = 88;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
@@ -470,7 +472,7 @@ var getQuaternaryEntries = () =>
 {
     quaternaryEntries[0].value = t.toFixed(2);
     if(angleMs.level)
-        quaternaryEntries[1].value = wTerm;
+        quaternaryEntries[1].value = derivTerm;
     return quaternaryEntries;
 }
 

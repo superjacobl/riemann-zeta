@@ -3,7 +3,6 @@
 ## Balance
 
 - Theory is slow affff
-- New approximation methods
 
 ## Design
 
