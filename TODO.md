@@ -3,7 +3,6 @@
 ## Balance
 
 - Theory is slow affff
-- b will be useless after a while
 - New approximation methods
 
 ## Design
@@ -22,10 +21,9 @@
 ### Currencies
 
 - Decoupling zeta into Re and Im, but it will diverge from our current |z| model.
-- Since we have the modulus of z for a currency, how about another for the argument (angle)? 
-or angular velocity (small omega)
+- Since we have the modulus of z for a currency, how about another for the **argument** (angle)? or **angular velocity** (small omega)
+  - Scrapped. It's not an interesting property, as it's fairly stable.
 
 ### Milestones
 
 - Increase t_dot by 4x, but sqrts the |z| portion
-- Unlock angular velocity currency

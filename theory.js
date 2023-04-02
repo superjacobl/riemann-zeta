@@ -249,28 +249,37 @@ let C = (n, z) =>
                 +.00000000000000000004 * Math.pow(z,48.0));
 }
 
+let logLookup = [];
+let sqrtLookup = [];
+
 let zeta = (t, n) =>
 {
-    let ZZ = 0;
+    let Z = 0;
     let R = 0;
-    let N = Math.sqrt(t/(2.0 * Math.PI));
-    let p = Math.sqrt(t/(2.0 * Math.PI)) - N;
+    let fullN = Math.sqrt(t / (2*Math.PI));
+    let N = Math.floor(fullN);
+    let p = fullN - N;
     let th = theta(t);
 
     for(let j = 1; j <= N; ++j)
     {
-        ZZ += Math.cos(th - t*Math.log(j)) / Math.sqrt(j);
+        if(typeof logLookup[j] === 'undefined')
+        {
+            logLookup[j] = Math.log(j);
+            sqrtLookup[j] = Math.sqrt(j);
+        }
+        Z += Math.cos(th - t*logLookup[j]) / sqrtLookup[j];
     }
-    ZZ = 2.0 * ZZ;
+    Z *= 2;
 
     for(let k = 0; k <= n; ++k)
     {
-        R = R + C(k,2.0*p-1.0) * Math.pow(2.0*Math.PI/t, k*0.5);
+        R += C(k, 2*p-1) * Math.pow(2*Math.PI/t, k*0.5);
     }
-    R = even(N-1) * Math.pow(2.0 * Math.PI / t, 0.25) * R;
+    R *= even(N-1) * Math.pow(2*Math.PI/t, 0.25);
 
-    let z = ZZ + R;
-    return [z*Math.cos(th), -z*Math.sin(th), z];
+    Z += R;
+    return [Z*Math.cos(th), -Z*Math.sin(th), Z];
 }
 
 /**
@@ -380,7 +389,8 @@ var init = () =>
     }
 
     theory.primaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 42;
+    theory.secondaryEquationScale = 0.96;
+    theory.secondaryEquationHeight = 48;
 
     updateAvailability();
 }
@@ -440,15 +450,15 @@ var getPrimaryEquation = () =>
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\omega}=\\left|\\frac{d\\theta(\\zeta(s))}{dt}\\right|`;
+    let omegaPart = `\\dot{\\omega}=\\frac{|d\\theta(\\zeta(s))|}{dt}`;
     theory.primaryEquationHeight = 88;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta(s)=\\sum_{n=1}^{\\infty}\\frac{1}{n^s},&
-    ${theory.latexSymbol}=\\max\\rho\\end{array}`;
+    return `\\begin{array}{c}\\zeta(s)=\\frac{1}{\\Gamma(s)}\\int_{0}^{\\infty}
+    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho\\end{array}`;
 }
 
 var getTertiaryEquation = () =>
