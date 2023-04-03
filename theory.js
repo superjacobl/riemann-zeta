@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ExponentialCost, FirstFreeCost, LinearCost } from '../api/Costs';
+import { ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
@@ -66,6 +66,9 @@ const bMaxLevel = 10;
 const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
+
+const wCost = new StepwiseCost(new ExponentialCost(14000, 4.2), 4);
+const getw = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const permaCosts =
 [
@@ -292,7 +295,9 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
-var c1ExpMs, speedMs, angleMs, blackholeMs, warpMs;
+var warpPerma;
+
+var c1ExpMs, speedMs, derivMs, blackholeMs;
 
 var c1, c2, b, w;
 
@@ -344,6 +349,18 @@ var init = () =>
         getInfo(b.level + amount));
         b.maxLevel = bMaxLevel;
     }
+    /* w
+    A doublew.
+    */
+    {
+        let getDesc = (level) => getInfo(level);
+        let getInfo = (level) => `w=${getw(level).toString(0)}`;
+        w = theory.createUpgrade(4, derivCurrency, wCost);
+        w.getDescription = (_) => Utils.getMath(getDesc(w.level));
+        w.getInfo = (amount) => Utils.getMathTo(getInfo(w.level),
+        getInfo(w.level + amount));
+        w.isAvailable = false;
+    }
     
     theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
     theory.createBuyAllUpgrade(1, normCurrency, permaCosts[1]);
@@ -364,11 +381,11 @@ var init = () =>
     Benefits from speed/exp.
     */
     {
-        angleMs = theory.createMilestoneUpgrade(1, 1);
-        angleMs.description = Localization.getUpgradeUnlockDesc(
+        derivMs = theory.createMilestoneUpgrade(1, 1);
+        derivMs.description = Localization.getUpgradeUnlockDesc(
         derivCurrency.symbol);
-        angleMs.info = Localization.getUpgradeUnlockInfo(derivCurrency.symbol);
-        angleMs.boughtOrRefunded = (_) =>
+        derivMs.info = Localization.getUpgradeUnlockInfo(derivCurrency.symbol);
+        derivMs.boughtOrRefunded = (_) =>
         {
             theory.invalidatePrimaryEquation();
             theory.invalidateQuaternaryValues();
@@ -397,10 +414,10 @@ var init = () =>
 
 var updateAvailability = () =>
 {
-    // w.isAvailable = angleMs.level > 0;
+    w.isAvailable = derivMs.level > 0;
 }
 
-var isCurrencyVisible = (index) => (index && angleMs.level > 0) || !index;
+var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
@@ -418,23 +435,24 @@ var tick = (elapsedTime, multiplier) =>
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
     let bonus = theory.publicationMultiplier;
+    let wTerm = getw(w.level);
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
     // let z = [Math.cos(t), Math.cos(t), t];
-    if(angleMs.level)
+    if(derivMs.level)
     {
         let dr = z[0] - rCoord;
         let di = z[1] - iCoord;
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
-        derivCurrency.value += derivTerm * bonus;
+        derivCurrency.value += derivTerm * wTerm * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs().pow(getZetaExp(speedMs.level));
     let bTerm = getbTerm(b.level);
 
-    normCurrency.value += dTime*tTerm*c1Term*c2Term*bonus / (zTerm+bTerm);
+    normCurrency.value += dTime*tTerm*c1Term*c2Term*wTerm*bonus / (zTerm+bTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -443,16 +461,16 @@ var tick = (elapsedTime, multiplier) =>
 var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
-    ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2}
-    {|\\zeta(\\frac{1}{2}+it)|
+    ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
+    ${derivMs.level ? `\\times w` : ''}}{|\\zeta(\\frac{1}{2}+it)|
     ${speedMs.level ? `^{${getZetaExp(speedMs.level).toString(speedMs.level)}}`
     : ''}+10^{-b}}`;
-    if(!angleMs.level)
+    if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\rho '}=\\frac{|d\\zeta(s)|}{dt}`;
+    let omegaPart = `\\dot{\\rho '}=w\\times\\frac{|d\\zeta(s)|}{dt}`;
     theory.primaryEquationHeight = 88;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
@@ -471,8 +489,10 @@ var getTertiaryEquation = () =>
 var getQuaternaryEntries = () =>
 {
     quaternaryEntries[0].value = t.toFixed(2);
-    if(angleMs.level)
+    if(derivMs.level)
         quaternaryEntries[1].value = derivTerm;
+    else
+        quaternaryEntries[1].value = null;
     return quaternaryEntries;
 }
 
