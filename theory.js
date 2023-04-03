@@ -51,7 +51,6 @@ const HALF = BigNumber.from(0.5);
 const resolution = 5;
 const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
-const getZetaExp = (level) => HALF.pow(level);
 
 const c1ExpMaxLevel = 3;
 const c1ExpInc = 0.07;
@@ -397,12 +396,11 @@ var init = () =>
     */
     {
         speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
-        speedMs.description =
-        `${Localization.getUpgradeIncCustomDesc(getLoc('speed'),
-        `${getSpeed(1)}\\times`)}; ${Localization.getUpgradeDecCustomDesc(
-        Localization.format(getLoc('zExp'), '|\\zeta(s)|'), getLoc('half'))}`;
-        speedMs.info = speedMs.description;
-        speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+        speedMs.description = Localization.getUpgradeIncCustomDesc(
+        getLoc('speed'), `\\times${getSpeed(1)}`);
+        speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
+        `\\times${getSpeed(1)}`);
+        // speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
 
     theory.primaryEquationScale = 0.96;
@@ -449,7 +447,7 @@ var tick = (elapsedTime, multiplier) =>
     }
     rCoord = z[0];
     iCoord = z[1];
-    zTerm = BigNumber.from(z[2]).abs().pow(getZetaExp(speedMs.level));
+    zTerm = BigNumber.from(z[2]).abs();
     let bTerm = getbTerm(b.level);
 
     normCurrency.value += dTime*tTerm*c1Term*c2Term*wTerm*bonus / (zTerm+bTerm);
@@ -462,9 +460,7 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w` : ''}}{|\\zeta(\\frac{1}{2}+it)|
-    ${speedMs.level ? `^{${getZetaExp(speedMs.level).toString(speedMs.level)}}`
-    : ''}+10^{-b}}`;
+    ${derivMs.level ? `\\times w` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
