@@ -466,8 +466,8 @@ var getPrimaryEquation = () =>
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\delta}=w\\times\\frac{|d\\zeta(s)|}{dt}`;
-    theory.primaryEquationHeight = 88;
+    let omegaPart = `\\enspace\\dot{\\delta}=w\\times\\zeta '(s)`;
+    theory.primaryEquationHeight = 84;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
