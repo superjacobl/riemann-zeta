@@ -66,8 +66,11 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const wCost = new StepwiseCost(new ExponentialCost(14000, 4.2), 4);
-const getw = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
+const w1Cost = new StepwiseCost(new ExponentialCost(14000, 4.2), 4);
+const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
+
+const w2Cost = new ExponentialCost(1e3, 1e3);
+const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
@@ -296,9 +299,9 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var warpPerma;
 
-var c1ExpMs, speedMs, derivMs, blackholeMs;
+var c1ExpMs, speedMs, derivMs, w2Ms, blackholeMs;
 
-var c1, c2, b, w;
+var c1, c2, b, w1, w2;
 
 var normCurrency, derivCurrency;
 
@@ -348,17 +351,29 @@ var init = () =>
         getInfo(b.level + amount));
         b.maxLevel = bMaxLevel;
     }
-    /* w
-    A doublew.
+    /* w1
+    A doublew 1.
     */
     {
         let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `w=${getw(level).toString(0)}`;
-        w = theory.createUpgrade(4, derivCurrency, wCost);
-        w.getDescription = (_) => Utils.getMath(getDesc(w.level));
-        w.getInfo = (amount) => Utils.getMathTo(getInfo(w.level),
-        getInfo(w.level + amount));
-        w.isAvailable = false;
+        let getInfo = (level) => `w_1=${getw1(level).toString(0)}`;
+        w1 = theory.createUpgrade(4, derivCurrency, w1Cost);
+        w1.getDescription = (_) => Utils.getMath(getDesc(w1.level));
+        w1.getInfo = (amount) => Utils.getMathTo(getInfo(w1.level),
+        getInfo(w1.level + amount));
+        w1.isAvailable = false;
+    }
+    /* w2
+    A doublew 2.
+    */
+    {
+        let getDesc = (level) => `w_2=2^{${level}}`;
+        let getInfo = (level) => `w_2=${getw2(level).toString(0)}`;
+        w2 = theory.createUpgrade(5, derivCurrency, w2Cost);
+        w2.getDescription = (_) => Utils.getMath(getDesc(w2.level));
+        w2.getInfo = (amount) => Utils.getMathTo(getInfo(w2.level),
+        getInfo(w2.level + amount));
+        w2.isAvailable = false;
     }
     
     theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
@@ -376,6 +391,17 @@ var init = () =>
         c1ExpMs.info = Localization.getUpgradeIncCustomExpInfo('c_1', c1ExpInc);
         c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
+    /* Speed/exp
+    Tradeoff.
+    */
+    {
+        speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
+        speedMs.description = Localization.getUpgradeIncCustomDesc(
+        getLoc('speed'), `\\times${getSpeed(1)}`);
+        speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
+        `\\times${getSpeed(1)}`);
+        // speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+    }
     /* Unlock omega
     Benefits from speed/exp.
     */
@@ -390,17 +416,20 @@ var init = () =>
             theory.invalidateQuaternaryValues();
             updateAvailability();
         }
+        derivMs.canBeRefunded = () => w2Ms.level == 0;
     }
-    /* Speed/exp
-    Tradeoff.
+    /* w2
     */
     {
-        speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
-        speedMs.description = Localization.getUpgradeIncCustomDesc(
-        getLoc('speed'), `\\times${getSpeed(1)}`);
-        speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
-        `\\times${getSpeed(1)}`);
-        // speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+        w2Ms = theory.createMilestoneUpgrade(3, 1);
+        w2Ms.description = Localization.getUpgradeUnlockDesc('w_2');
+        w2Ms.info = Localization.getUpgradeUnlockInfo('w_2');
+        w2Ms.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            updateAvailability();
+        }
+        w2Ms.isAvailable = false;
     }
 
     theory.primaryEquationScale = 0.96;
@@ -412,20 +441,22 @@ var init = () =>
 
 var updateAvailability = () =>
 {
-    w.isAvailable = derivMs.level > 0;
+    w1.isAvailable = derivMs.level > 0;
+    w2Ms.isAvailable = derivMs.level > 0;
+    w2.isAvailable = w2Ms.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
-    if(game.isCalculatingOfflineProgress)
-        gameOffline = true;
-    else if(gameOffline)
-    {
-        theory.clearGraph();
-        gameOffline = false;
-    }
+    // if(game.isCalculatingOfflineProgress)
+    //     gameOffline = true;
+    // else if(gameOffline)
+    // {
+    //     theory.clearGraph();
+    //     gameOffline = false;
+    // }
 
     let dt = getSpeed(speedMs.level) / resolution * elapsedTime;
     t += dt;
@@ -433,7 +464,7 @@ var tick = (elapsedTime, multiplier) =>
     let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
     let bonus = theory.publicationMultiplier;
-    let wTerm = getw(w.level);
+    let wTerm = getw1(w1.level);
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
@@ -443,7 +474,7 @@ var tick = (elapsedTime, multiplier) =>
         let dr = z[0] - rCoord;
         let di = z[1] - iCoord;
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
-        derivCurrency.value += derivTerm * wTerm * bonus;
+        derivCurrency.value += derivTerm * wTerm * getw2(w2.level) * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
@@ -460,13 +491,14 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    ${derivMs.level ? `\\times w_1` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\enspace\\dot{\\delta}=w\\times\\zeta '(s)`;
+    let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
+    \\times|\\zeta '(s)|`;
     theory.primaryEquationHeight = 84;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
