@@ -66,10 +66,10 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 3.6), 4);
+const w1Cost = new ExponentialCost(150000, 0.9);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1e3, Math.log2(1e3));
+const w2Cost = new ExponentialCost(1e3, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
