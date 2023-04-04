@@ -379,10 +379,21 @@ var init = () =>
         getInfo(w2.level + amount));
         w2.isAvailable = false;
     }
-    
+
     theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
     theory.createBuyAllUpgrade(1, normCurrency, permaCosts[1]);
     theory.createAutoBuyerUpgrade(2, normCurrency, permaCosts[2]);
+    /* Free penny
+    For testing purposes
+    */
+    {
+        let warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+        new FreeCost);
+        warpFive.description = 'Get 5 penny for free';
+        warpFive.info = 'Yields 5 penny';
+        warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
+        (BigNumber.ONE + normCurrency.value);
+    }
 
     theory.setMilestoneCost(milestoneCost);
     /* c1 exponent
@@ -413,7 +424,7 @@ var init = () =>
         blackholeMs = theory.createMilestoneUpgrade(4, speedMaxLevel);
         blackholeMs.description = Localization.getUpgradeUnlockDesc(
         getLoc('blackhole'));
-        blackholeMs.info = Localization.getUpgradeUnlockDesc(
+        blackholeMs.info = Localization.getUpgradeUnlockInfo(
         getLoc('blackhole'));
     }
     /* Unlock omega
