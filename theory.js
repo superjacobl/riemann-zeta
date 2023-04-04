@@ -488,10 +488,11 @@ var tick = (elapsedTime, multiplier) =>
     let dt = t_dot * elapsedTime;
     t += dt;
 
-    let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
-    let bonus = theory.publicationMultiplier;
-    let wTerm = getw1(w1.level);
+    let bonus = BigNumber.from(elapsedTime * multiplier) *
+    theory.publicationMultiplier;
+    let w1Term = derivMs.level ? getw1(w1.level) : BigNumber.ONE;
+    let w2Term = w2Ms.level ? getw2(w2.level) : BigNumber.ONE;
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
@@ -501,14 +502,14 @@ var tick = (elapsedTime, multiplier) =>
         let dr = z[0] - rCoord;
         let di = z[1] - iCoord;
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
-        derivCurrency.value += derivTerm * wTerm * getw2(w2.level) * bonus;
+        derivCurrency.value += derivTerm * w1Term * w2Term * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
     let bTerm = getbTerm(b.level);
 
-    normCurrency.value += dTime*tTerm*c1Term*c2Term*wTerm*bonus / (zTerm+bTerm);
+    normCurrency.value += tTerm*c1Term*c2Term*w1Term*bonus / (zTerm+bTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
