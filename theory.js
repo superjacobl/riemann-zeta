@@ -55,10 +55,10 @@ const getSpeed = (level) => 1 << (level * 2);
 const c1ExpMaxLevel = 3;
 const c1ExpInc = 0.07;
 const getc1Exp = (level) => BigNumber.ONE + BigNumber.from(c1ExpInc * level);
-const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
+const c1Cost = new FirstFreeCost(new ExponentialCost(8, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 2.45);
+const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 10;
@@ -74,7 +74,7 @@ const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
-    BigNumber.TEN.pow(8),
+    BigNumber.TEN.pow(9),
     BigNumber.TEN.pow(14),
     BigNumber.TEN.pow(21)
 ];
