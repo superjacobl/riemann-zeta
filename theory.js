@@ -305,7 +305,7 @@ var normCurrency, derivCurrency;
 var init = () =>
 {
     normCurrency = theory.createCurrency();
-    derivCurrency = theory.createCurrency('ρ\'', '\\rho \'');
+    derivCurrency = theory.createCurrency('δ', '\\delta');
     /* c1
     A sea one.
     */
@@ -466,7 +466,7 @@ var getPrimaryEquation = () =>
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
-    let omegaPart = `\\dot{\\rho '}=w\\times\\frac{|d\\zeta(s)|}{dt}`;
+    let omegaPart = `\\dot{\\delta}=w\\times\\frac{|d\\zeta(s)|}{dt}`;
     theory.primaryEquationHeight = 88;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
