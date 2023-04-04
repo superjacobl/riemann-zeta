@@ -548,7 +548,7 @@ var getQuaternaryEntries = () =>
     if(derivMs.level)
         quaternaryEntries[2].value = derivTerm.toString(3);
     else
-        quaternaryEntries[3].value = null;
+        quaternaryEntries[2].value = null;
     return quaternaryEntries;
 }
 
