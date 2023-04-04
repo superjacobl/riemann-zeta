@@ -32,6 +32,7 @@ var version = 0;
 
 let gameOffline = false;
 let t = 0;
+let dt = 0;
 let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
 let derivTerm = BigNumber.ZERO;
@@ -39,6 +40,7 @@ let rCoord = 0;
 let iCoord = 0;
 let quaternaryEntries =
 [
+    new QuaternaryEntry('\\dot{t}', null),
     new QuaternaryEntry('t', null),
     new QuaternaryEntry('\\zeta \'', null)
 ];
@@ -51,6 +53,7 @@ const HALF = BigNumber.from(0.5);
 const resolution = 5;
 const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
+const getBlackholeSpeed = (z) => (z + 1) / 10;
 
 const c1ExpMaxLevel = 3;
 const c1ExpInc = 0.07;
@@ -66,7 +69,7 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new ExponentialCost(150000, 0.9);
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, 3.6), 4);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const w2Cost = new ExponentialCost(1e3, Math.log2(10));
@@ -93,7 +96,8 @@ const locStrings =
     {
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
-        half: '\\text{half}'
+        half: '\\text{half}',
+        blackhole: '\\text{a blackhole at the origin}',
     }
 };
 
@@ -400,7 +404,17 @@ var init = () =>
         getLoc('speed'), `\\times${getSpeed(1)}`);
         speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
         `\\times${getSpeed(1)}`);
-        // speedMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+        speedMs.isAvailable = false;
+    }
+    /* Speed/exp
+    Tradeoff.
+    */
+    {
+        blackholeMs = theory.createMilestoneUpgrade(4, speedMaxLevel);
+        blackholeMs.description = Localization.getUpgradeUnlockDesc(
+        getLoc('blackhole'));
+        blackholeMs.info = Localization.getUpgradeUnlockDesc(
+        getLoc('blackhole'));
     }
     /* Unlock omega
     Benefits from speed/exp.
@@ -458,7 +472,8 @@ var tick = (elapsedTime, multiplier) =>
     //     gameOffline = false;
     // }
 
-    let dt = getSpeed(speedMs.level) / resolution * elapsedTime;
+    dt = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
+    1 / resolution) * elapsedTime;
     t += dt;
 
     let dTime = BigNumber.from(elapsedTime * multiplier);
@@ -516,11 +531,12 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t.toFixed(2);
+    quaternaryEntries[0].value = dt.toFixed(blackholeMs.level ? 3 : 2);
+    quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
-        quaternaryEntries[1].value = derivTerm;
+        quaternaryEntries[2].value = derivTerm;
     else
-        quaternaryEntries[1].value = null;
+        quaternaryEntries[3].value = null;
     return quaternaryEntries;
 }
 
