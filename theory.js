@@ -50,10 +50,10 @@ const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
-const resolution = 2;
+const resolution = 4;
 const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
-const getBlackholeSpeed = (z) => (z + 1) / 10;
+const getBlackholeSpeed = (z) => (z + 0.2) / 10;
 
 const c1ExpMaxLevel = 3;
 const c1ExpInc = 0.07;
@@ -543,7 +543,7 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 1);
+    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 2);
     quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
         quaternaryEntries[2].value = derivTerm.toString(3);
