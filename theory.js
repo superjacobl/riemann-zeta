@@ -20,7 +20,7 @@ var getDescription = (language) =>
     let descs =
     {
         en:
-`A function that goes around.`,
+`We need a better introduction for the Zeta function.`,
     };
 
     return descs[language] || descs.en;
@@ -50,10 +50,10 @@ const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
-const resolution = 4;
+const resolution = 2;
 const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
-const getBlackholeSpeed = (z) => (z + 0.2) / 10;
+const getBlackholeSpeed = (z) => Math.min(z**2 + 0.02, 1/resolution);
 
 const c1ExpMaxLevel = 3;
 // The first 3 zeta zeroes lol
@@ -94,9 +94,10 @@ new LinearCost(10, 5));
 
 const tauRate = 0.1;
 const pubExp = 2.1;
-var getPublicationMultiplier = (tau) => tau.pow(pubExp);
+const pubDiv = 4;
+var getPublicationMultiplier = (tau) => tau.pow(pubExp) / pubDiv;
 var getPublicationMultiplierFormula = (symbol) =>
-`{${symbol}}^{${pubExp}}`;
+`\\frac{{${symbol}}^{${pubExp}}}{${pubDiv}}`;
 
 const locStrings =
 {
@@ -106,7 +107,8 @@ const locStrings =
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
-        blackhole: '\\text{a black hole at the origin}',
+        blackhole: 'Unleash a black hole',
+        blackholeInfo: 'Decreases {0} as {1} gets closer to the origin'
     }
 };
 
@@ -467,10 +469,9 @@ var init = () =>
     */
     {
         blackholeMs = theory.createMilestoneUpgrade(4, 1);
-        blackholeMs.description = Localization.getUpgradeUnlockDesc(
-        getLoc('blackhole'));
-        blackholeMs.info = Localization.getUpgradeUnlockInfo(
-        getLoc('blackhole'));
+        blackholeMs.description = getLoc('blackhole');
+        blackholeMs.info = Localization.format(getLoc('blackholeInfo'),
+        Utils.getMath('\\dot{t}'), Utils.getMath('\\zeta(s)'));
         blackholeMs.isAvailable = false;
     }
 
@@ -577,7 +578,7 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 2);
+    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 1);
     quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
         quaternaryEntries[2].value = derivTerm.toString(3);
