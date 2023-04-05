@@ -416,7 +416,11 @@ var init = () =>
         c1ExpMs.getInfo = (amount) =>
         Localization.getUpgradeIncCustomExpInfo('c_1',
         c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
-        c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+        c1ExpMs.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            updateAvailability();
+        }
     }
     /* Speed/exp
     Tradeoff.
@@ -467,6 +471,7 @@ var init = () =>
         getLoc('blackhole'));
         blackholeMs.info = Localization.getUpgradeUnlockInfo(
         getLoc('blackhole'));
+        blackholeMs.isAvailable = false;
     }
 
     theory.primaryEquationScale = 0.96;
@@ -481,6 +486,8 @@ var updateAvailability = () =>
     w1.isAvailable = derivMs.level > 0;
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
+    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
+    derivMs.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
