@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0;
+var version = 0.2;
 
 let gameOffline = false;
 let t = 0;
@@ -56,8 +56,15 @@ const getSpeed = (level) => 1 << (level * 2);
 const getBlackholeSpeed = (z) => (z + 0.2) / 10;
 
 const c1ExpMaxLevel = 3;
-const c1ExpInc = 0.07;
-const getc1Exp = (level) => BigNumber.ONE + BigNumber.from(c1ExpInc * level);
+// The first 3 zeta zeroes lol
+const c1ExpTable =
+[
+    BigNumber.ONE,
+    BigNumber.from(1.14),
+    BigNumber.from(1.21),
+    BigNumber.from(1.25)
+];
+const getc1Exp = (level) => c1ExpTable[level];
 const c1Cost = new FirstFreeCost(new ExponentialCost(8, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
@@ -69,7 +76,7 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4), 10);
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const w2Cost = new ExponentialCost(1, Math.log2(100));
@@ -84,8 +91,8 @@ const permaCosts =
 
 const milestoneCost = new LinearCost(25, 25);
 
-const tauRate = 1;
-const pubExp = 0.2;
+const tauRate = 0.1;
+const pubExp = 2.1;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
@@ -94,6 +101,7 @@ const locStrings =
 {
     en:
     {
+        versionName: 'v0.2, Black Hole Edition',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -401,22 +409,25 @@ var init = () =>
     */
     {
         c1ExpMs = theory.createMilestoneUpgrade(0, c1ExpMaxLevel);
-        c1ExpMs.description = Localization.getUpgradeIncCustomExpDesc('c_1',
-        c1ExpInc);
-        c1ExpMs.info = Localization.getUpgradeIncCustomExpInfo('c_1', c1ExpInc);
+        c1ExpMs.getDescription = (amount) =>
+        Localization.getUpgradeIncCustomExpDesc('c_1',
+        c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
+        c1ExpMs.getInfo = (amount) =>
+        Localization.getUpgradeIncCustomExpInfo('c_1',
+        c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
         c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
     }
     /* Speed/exp
     Tradeoff.
     */
-    {
-        speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
-        speedMs.description = Localization.getUpgradeIncCustomDesc(
-        getLoc('speed'), `\\times${getSpeed(1)}`);
-        speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
-        `\\times${getSpeed(1)}`);
-        speedMs.isAvailable = false;
-    }
+    // {
+    //     speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
+    //     speedMs.description = Localization.getUpgradeIncCustomDesc(
+    //     getLoc('speed'), `\\times${getSpeed(1)}`);
+    //     speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
+    //     `\\times${getSpeed(1)}`);
+    //     speedMs.isAvailable = false;
+    // }
     /* Unlock omega
     Benefits from speed/exp.
     */
@@ -513,6 +524,30 @@ var tick = (elapsedTime, multiplier) =>
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
+}
+
+var getEquationOverlay = () =>
+{
+    let result = ui.createGrid
+    ({
+        // rowDefinitions: ['1*', '1*'],
+        // columnDefinitions: ['1*', '2*', '1*'],
+        children:
+        [
+            // For reference
+            // ui.createFrame({row: 0, column: 2}),
+            // ui.createFrame({row: 1, column: 2}),
+            ui.createLatexLabel
+            ({
+                verticalTextAlignment: TextAlignment.START,
+                margin: new Thickness(6, 4),
+                text: getLoc('versionName'),
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            })
+        ]
+    });
+    return result;
 }
 
 var getPrimaryEquation = () =>
