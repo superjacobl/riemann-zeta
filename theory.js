@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.23;
+var version = 0.24;
 
 let gameOffline = false;
 let t = 0;
@@ -71,9 +71,9 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 10;
+const bMaxLevel = 8;
 const bCost = new ExponentialCost(1e6, Math.log2(1e6));
-const getb = (level) => BigNumber.ONE + HALF * level;
+const getb = (level) => BigNumber.ONE + HALF * (level/2);
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
 const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
@@ -89,7 +89,8 @@ const permaCosts =
     BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new LinearCost(2.5, 2.5);
+const milestoneCost = new CompositeCost(2, new LinearCost(2.5, 2.5),
+new LinearCost(10, 5));
 
 const tauRate = 0.1;
 const pubExp = 2.1;
@@ -101,7 +102,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.3, Black Hole Edition',
+        versionName: 'v0.2.4, WIP',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -356,7 +357,7 @@ var init = () =>
     */
     {
         let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `b=${getb(level).toString(1)}`;
+        let getInfo = (level) => `b=${getb(level).toString()}`;
         b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
@@ -511,7 +512,8 @@ var tick = (elapsedTime, multiplier) =>
     zTerm = BigNumber.from(z[2]).abs();
     let bTerm = getbTerm(b.level);
 
-    normCurrency.value += tTerm*c1Term*c2Term*w1Term*bonus / (zTerm+bTerm);
+    normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
+    (zTerm/getb(b.level) + bTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -542,7 +544,7 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w_1` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-b}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
