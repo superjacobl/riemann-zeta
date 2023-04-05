@@ -487,7 +487,7 @@ var updateAvailability = () =>
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
     blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
-    derivMs.level > 0;
+    w2Ms.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
