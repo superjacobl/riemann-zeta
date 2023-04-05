@@ -65,7 +65,7 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(8, 0.6));
+const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
 const c2Cost = new ExponentialCost(1400, 2.4);
@@ -569,7 +569,8 @@ var getPrimaryEquation = () =>
 var getSecondaryEquation = () =>
 {
     return `\\begin{array}{c}\\zeta(s)=\\frac{1}{\\Gamma(s)}\\int_{0}^{\\infty}
-    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho\\end{array}`;
+    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho ^{${tauRate}}
+    \\end{array}`;
 }
 
 var getTertiaryEquation = () =>
