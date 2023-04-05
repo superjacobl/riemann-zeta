@@ -486,14 +486,6 @@ var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
-    // if(game.isCalculatingOfflineProgress)
-    //     gameOffline = true;
-    // else if(gameOffline)
-    // {
-    //     theory.clearGraph();
-    //     gameOffline = false;
-    // }
-
     t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
     1 / resolution);
     let dt = t_dot * elapsedTime;
@@ -507,7 +499,6 @@ var tick = (elapsedTime, multiplier) =>
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
-    // let z = [Math.cos(t), Math.cos(t), t];
     if(derivMs.level)
     {
         let dr = z[0] - rCoord;
@@ -530,13 +521,10 @@ var getEquationOverlay = () =>
 {
     let result = ui.createGrid
     ({
-        // rowDefinitions: ['1*', '1*'],
-        // columnDefinitions: ['1*', '2*', '1*'],
+        inputTransparent: true,
+        cascadeInputTransparent: false,
         children:
         [
-            // For reference
-            // ui.createFrame({row: 0, column: 2}),
-            // ui.createFrame({row: 1, column: 2}),
             ui.createLatexLabel
             ({
                 verticalTextAlignment: TextAlignment.START,
