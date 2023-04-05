@@ -97,7 +97,7 @@ const locStrings =
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
-        blackhole: '\\text{a blackhole at the origin}',
+        blackhole: '\\text{a black hole at the origin}',
     }
 };
 
