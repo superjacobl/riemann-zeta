@@ -89,7 +89,7 @@ const permaCosts =
     BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new LinearCost(25, 25);
+const milestoneCost = new LinearCost(2.5, 2.5);
 
 const tauRate = 0.1;
 const pubExp = 2.1;
