@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.2;
+var version = 0.21;
 
 let gameOffline = false;
 let t = 0;
@@ -65,7 +65,7 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(8, 0.6));
+const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
 const c2Cost = new ExponentialCost(1400, 2.4);
@@ -101,7 +101,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2, Black Hole Edition',
+        versionName: 'v0.2.1, Black Hole Edition',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -569,7 +569,8 @@ var getPrimaryEquation = () =>
 var getSecondaryEquation = () =>
 {
     return `\\begin{array}{c}\\zeta(s)=\\frac{1}{\\Gamma(s)}\\int_{0}^{\\infty}
-    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho\\end{array}`;
+    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho ^{${tauRate}}
+    \\end{array}`;
 }
 
 var getTertiaryEquation = () =>
