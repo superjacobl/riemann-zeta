@@ -1,5 +1,6 @@
 import { BigNumber } from '../api/BigNumber';
-import { ExponentialCost, FirstFreeCost, LinearCost } from '../api/Costs';
+import { ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
+import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
 import { Vector3 } from '../api/Vector3';
@@ -27,33 +28,59 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0;
+var version = 0.2;
 
 let gameOffline = false;
 let t = 0;
+let t_dot = 0;
 let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
+let derivTerm = BigNumber.ZERO;
 let rCoord = 0;
 let iCoord = 0;
-let quaternaryEntries = [new QuaternaryEntry('t', null)];
+let quaternaryEntries =
+[
+    new QuaternaryEntry('\\dot{t}', null),
+    new QuaternaryEntry('t', null),
+    new QuaternaryEntry('\\zeta \'', null)
+];
 
 const scale = 4;
 const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
-const resolution = 5;
+const resolution = 4;
+const speedMaxLevel = 1;
+const getSpeed = (level) => 1 << (level * 2);
+const getBlackholeSpeed = (z) => (z + 0.2) / 10;
 
-const c1Cost = new FirstFreeCost(new ExponentialCost(1, 0.7));
+const c1ExpMaxLevel = 3;
+// The first 3 zeta zeroes lol
+const c1ExpTable =
+[
+    BigNumber.ONE,
+    BigNumber.from(1.14),
+    BigNumber.from(1.21),
+    BigNumber.from(1.25)
+];
+const getc1Exp = (level) => c1ExpTable[level];
+const c1Cost = new FirstFreeCost(new ExponentialCost(8, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 2.8);
+const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 10;
 const bCost = new ExponentialCost(1e6, Math.log2(1e6));
 const getb = (level) => BigNumber.ONE + HALF * level;
 const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
+
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
+const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
+
+const w2Cost = new ExponentialCost(1, Math.log2(100));
+const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
@@ -64,24 +91,52 @@ const permaCosts =
 
 const milestoneCost = new LinearCost(25, 25);
 
-const tauRate = 1;
-const pubExp = 0.2;
+const tauRate = 0.1;
+const pubExp = 2.1;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
+
+const locStrings =
+{
+    en:
+    {
+        versionName: 'v0.2, Black Hole Edition',
+        speed: '\\text{speed}',
+        zExp: '{{{0}}}\\text{{ exponent}}',
+        half: '\\text{half}',
+        blackhole: '\\text{a black hole at the origin}',
+    }
+};
+
+const menuLang = Localization.language;
+/**
+ * Returns a localised string.
+ * @param {string} name the internal name of the string.
+ * @returns {string} the string.
+ */
+let getLoc = (name, lang = menuLang) =>
+{
+    if(lang in locStrings && name in locStrings[lang])
+        return locStrings[lang][name];
+
+    if(name in locStrings.en)
+        return locStrings.en[name];
+    
+    return `String missing: ${lang}.${name}`;
+}
 
 let even = (n) =>
 {
     if(n % 2 == 0)
         return 1;
     else
-        return(-1);
+        return -1;
 }
 
 let theta = (t) =>
 {
-    return (t/2.0*Math.log(t/2.0/Math.PI) - t/2.0 - Math.PI/8.0 + 1.0/48.0/t +
-    7.0/5760.0/t/t/t);
+    return t/2*Math.log(t/2/Math.PI) - t/2 - Math.PI/8 + 1/48/t + 7/5760/t/t/t;
 }
 
 let C = (n, z) =>
@@ -211,29 +266,37 @@ let C = (n, z) =>
                 +.00000000000000000004 * Math.pow(z,48.0));
 }
 
+let logLookup = [];
+let sqrtLookup = [];
+
 let zeta = (t, n) =>
 {
-    let ZZ = 0;
+    let Z = 0;
     let R = 0;
-    let k = 0;
-    let N = Math.sqrt(t/(2.0 * Math.PI));
-    let p = Math.sqrt(t/(2.0 * Math.PI)) - N;
+    let fullN = Math.sqrt(t / (2*Math.PI));
+    let N = Math.floor(fullN);
+    let p = fullN - N;
     let th = theta(t);
 
     for(let j = 1; j <= N; ++j)
     {
-        ZZ += Math.cos((th - t*Math.log(j))) / Math.sqrt(j);
+        if(typeof logLookup[j] === 'undefined')
+        {
+            logLookup[j] = Math.log(j);
+            sqrtLookup[j] = Math.sqrt(j);
+        }
+        Z += Math.cos(th - t*logLookup[j]) / sqrtLookup[j];
     }
-    ZZ = 2.0 * ZZ;
+    Z *= 2;
 
-    for(k = 0; k <= n; ++k)
+    for(let k = 0; k <= n; ++k)
     {
-        R = R + C(k,2.0*p-1.0) * Math.pow(2.0*Math.PI/t, k*0.5);
+        R += C(k, 2*p-1) * Math.pow(2*Math.PI/t, k*0.5);
     }
-    R = even(N-1) * Math.pow(2.0 * Math.PI / t, 0.25) * R;
+    R *= even(N-1) * Math.pow(2*Math.PI/t, 0.25);
 
-    let z = ZZ + R;
-    return [z*Math.cos(th), -z*Math.sin(th), z];
+    Z += R;
+    return [Z*Math.cos(th), -Z*Math.sin(th), Z];
 }
 
 /**
@@ -246,23 +309,33 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
-var c1, c2, b;
+var warpPerma;
 
-var currency;
+var c1ExpMs, speedMs, derivMs, w2Ms, blackholeMs;
+
+var c1, c2, b, w1, w2;
+
+var normCurrency, derivCurrency;
 
 var init = () =>
 {
-    currency = theory.createCurrency();
+    normCurrency = theory.createCurrency();
+    derivCurrency = theory.createCurrency('δ', '\\delta');
     /* c1
     A sea one.
     */
     {
+        
         let getDesc = (level) => `c_1=${getc1(level).toString(0)}`;
         let getInfo = (level) =>
         {
+            if(c1ExpMs.level > 0)
+                return `c_1^{${getc1Exp(c1ExpMs.level)}}=
+                ${getc1(level).pow(getc1Exp(c1ExpMs.level)).toString()}`;
+
             return getDesc(level);
         }
-        c1 = theory.createUpgrade(1, currency, c1Cost);
+        c1 = theory.createUpgrade(1, normCurrency, c1Cost);
         c1.getDescription = (_) => Utils.getMath(getDesc(c1.level));
         c1.getInfo = (amount) => Utils.getMathTo(getInfo(c1.level),
         getInfo(c1.level + amount));
@@ -273,7 +346,7 @@ var init = () =>
     {
         let getDesc = (level) => `c_2=2^{${level}}`;
         let getInfo = (level) => `c_2=${getc2(level).toString(0)}`;
-        c2 = theory.createUpgrade(2, currency, c2Cost);
+        c2 = theory.createUpgrade(2, normCurrency, c2Cost);
         c2.getDescription = (_) => Utils.getMath(getDesc(c2.level));
         c2.getInfo = (amount) => Utils.getMathTo(getInfo(c2.level),
         getInfo(c2.level + amount));
@@ -284,67 +357,219 @@ var init = () =>
     {
         let getDesc = (level) => getInfo(level);
         let getInfo = (level) => `b=${getb(level).toString(1)}`;
-        b = theory.createUpgrade(3, currency, bCost);
+        b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
         getInfo(b.level + amount));
         b.maxLevel = bMaxLevel;
     }
-    
-    theory.createPublicationUpgrade(0, currency, permaCosts[0]);
-    theory.createBuyAllUpgrade(1, currency, permaCosts[1]);
-    theory.createAutoBuyerUpgrade(2, currency, permaCosts[2]);
+    /* w1
+    A doublew 1.
+    */
+    {
+        let getDesc = (level) => getInfo(level);
+        let getInfo = (level) => `w_1=${getw1(level).toString(0)}`;
+        w1 = theory.createUpgrade(4, derivCurrency, w1Cost);
+        w1.getDescription = (_) => Utils.getMath(getDesc(w1.level));
+        w1.getInfo = (amount) => Utils.getMathTo(getInfo(w1.level),
+        getInfo(w1.level + amount));
+        w1.isAvailable = false;
+    }
+    /* w2
+    A doublew 2.
+    */
+    {
+        let getDesc = (level) => `w_2=2^{${level}}`;
+        let getInfo = (level) => `w_2=${getw2(level).toString(0)}`;
+        w2 = theory.createUpgrade(5, derivCurrency, w2Cost);
+        w2.getDescription = (_) => Utils.getMath(getDesc(w2.level));
+        w2.getInfo = (amount) => Utils.getMathTo(getInfo(w2.level),
+        getInfo(w2.level + amount));
+        w2.isAvailable = false;
+    }
 
-    theory.primaryEquationHeight = 60;
+    theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
+    theory.createBuyAllUpgrade(1, normCurrency, permaCosts[1]);
+    theory.createAutoBuyerUpgrade(2, normCurrency, permaCosts[2]);
+    /* Free penny
+    For testing purposes
+    */
+    {
+        let warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+        new FreeCost);
+        warpFive.description = 'Get 5 penny for free';
+        warpFive.info = 'Yields 5 penny';
+        warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
+        (BigNumber.ONE + normCurrency.value);
+    }
+
+    theory.setMilestoneCost(milestoneCost);
+    /* c1 exponent
+    Standard exponent upgrade.
+    */
+    {
+        c1ExpMs = theory.createMilestoneUpgrade(0, c1ExpMaxLevel);
+        c1ExpMs.getDescription = (amount) =>
+        Localization.getUpgradeIncCustomExpDesc('c_1',
+        c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
+        c1ExpMs.getInfo = (amount) =>
+        Localization.getUpgradeIncCustomExpInfo('c_1',
+        c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
+        c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+    }
+    /* Speed/exp
+    Tradeoff.
+    */
+    // {
+    //     speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
+    //     speedMs.description = Localization.getUpgradeIncCustomDesc(
+    //     getLoc('speed'), `\\times${getSpeed(1)}`);
+    //     speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
+    //     `\\times${getSpeed(1)}`);
+    //     speedMs.isAvailable = false;
+    // }
+    /* Unlock omega
+    Benefits from speed/exp.
+    */
+    {
+        derivMs = theory.createMilestoneUpgrade(1, 1);
+        derivMs.description = Localization.getUpgradeUnlockDesc(
+        derivCurrency.symbol);
+        derivMs.info = Localization.getUpgradeUnlockInfo(derivCurrency.symbol);
+        derivMs.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            theory.invalidateQuaternaryValues();
+            updateAvailability();
+        }
+        derivMs.canBeRefunded = () => w2Ms.level == 0;
+    }
+    /* w2
+    */
+    {
+        w2Ms = theory.createMilestoneUpgrade(3, 1);
+        w2Ms.description = Localization.getUpgradeAddTermDesc('w_2');
+        w2Ms.info = Localization.getUpgradeAddTermInfo('w_2');
+        w2Ms.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            updateAvailability();
+        }
+        w2Ms.isAvailable = false;
+    }
+    /* Blackhole
+    Tradeoff.
+    */
+    {
+        blackholeMs = theory.createMilestoneUpgrade(4, 1);
+        blackholeMs.description = Localization.getUpgradeUnlockDesc(
+        getLoc('blackhole'));
+        blackholeMs.info = Localization.getUpgradeUnlockInfo(
+        getLoc('blackhole'));
+    }
+
     theory.primaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 72;
+    theory.secondaryEquationScale = 0.96;
+    theory.secondaryEquationHeight = 48;
 
     updateAvailability();
 }
 
 var updateAvailability = () =>
 {
+    w1.isAvailable = derivMs.level > 0;
+    w2Ms.isAvailable = derivMs.level > 0;
+    w2.isAvailable = w2Ms.level > 0;
 }
+
+var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
-    if(game.isCalculatingOfflineProgress)
-        gameOffline = true;
-    else if(gameOffline)
-    {
-        theory.clearGraph();
-        gameOffline = false;
-    }
+    // if(game.isCalculatingOfflineProgress)
+    //     gameOffline = true;
+    // else if(gameOffline)
+    // {
+    //     theory.clearGraph();
+    //     gameOffline = false;
+    // }
 
-    t += 1/resolution * elapsedTime;
+    t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
+    1 / resolution);
+    let dt = t_dot * elapsedTime;
+    t += dt;
 
-    let dTime = BigNumber.from(elapsedTime * multiplier);
     tTerm = BigNumber.from(t);
-    let c1Term = getc1(c1.level);
+    let bonus = BigNumber.from(elapsedTime * multiplier) *
+    theory.publicationMultiplier;
+    let w1Term = derivMs.level ? getw1(w1.level) : BigNumber.ONE;
+    let w2Term = w2Ms.level ? getw2(w2.level) : BigNumber.ONE;
+    let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let z = zeta(t, 4);
+    // let z = [Math.cos(t), Math.cos(t), t];
+    if(derivMs.level)
+    {
+        let dr = z[0] - rCoord;
+        let di = z[1] - iCoord;
+        derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
+        derivCurrency.value += derivTerm * w1Term * w2Term * bonus;
+    }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
     let bTerm = getbTerm(b.level);
-    let bonus = theory.publicationMultiplier;
 
-    currency.value += dTime * tTerm * c1Term * c2Term * bonus / (zTerm + bTerm);
+    normCurrency.value += tTerm*c1Term*c2Term*w1Term*bonus / (zTerm+bTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
 }
 
+var getEquationOverlay = () =>
+{
+    let result = ui.createGrid
+    ({
+        // rowDefinitions: ['1*', '1*'],
+        // columnDefinitions: ['1*', '2*', '1*'],
+        children:
+        [
+            // For reference
+            // ui.createFrame({row: 0, column: 2}),
+            // ui.createFrame({row: 1, column: 2}),
+            ui.createLatexLabel
+            ({
+                verticalTextAlignment: TextAlignment.START,
+                margin: new Thickness(6, 4),
+                text: getLoc('versionName'),
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            })
+        ]
+    });
+    return result;
+}
+
 var getPrimaryEquation = () =>
 {
-    return `\\dot{\\rho}=\\frac{t\\times c_1c_2}
-    {|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
+    ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
+    ${derivMs.level ? `\\times w_1` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    if(!derivMs.level)
+    {
+        theory.primaryEquationHeight = 60;
+        return rhoPart;
+    }
+    let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
+    \\times|\\zeta '(s)|`;
+    theory.primaryEquationHeight = 84;
+    return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta(s)=\\sum_{n=1}^{\\infty}\\frac{1}{n^s}
-    \\\\\\\\${theory.latexSymbol}=\\max\\rho\\end{array}`;
+    return `\\begin{array}{c}\\zeta(s)=\\frac{1}{\\Gamma(s)}\\int_{0}^{\\infty}
+    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho\\end{array}`;
 }
 
 var getTertiaryEquation = () =>
@@ -354,17 +579,21 @@ var getTertiaryEquation = () =>
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t.toFixed(2);
-
+    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 2);
+    quaternaryEntries[1].value = t.toFixed(2);
+    if(derivMs.level)
+        quaternaryEntries[2].value = derivTerm.toString(3);
+    else
+        quaternaryEntries[2].value = null;
     return quaternaryEntries;
 }
 
-var getTau = () => currency.value.pow(tauRate);
+var getTau = () => normCurrency.value.pow(tauRate);
 
 var getCurrencyFromTau = (tau) =>
 [
     tau.max(BigNumber.ONE).pow(BigNumber.ONE / tauRate),
-    currency.symbol
+    normCurrency.symbol
 ];
 
 var postPublish = () =>
