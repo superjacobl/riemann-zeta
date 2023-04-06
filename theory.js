@@ -93,11 +93,10 @@ const milestoneCost = new CompositeCost(2, new LinearCost(2.5, 2.5),
 new LinearCost(10, 5));
 
 const tauRate = 0.1;
-const pubExp = 2.1;
-const pubDiv = 4;
-var getPublicationMultiplier = (tau) => tau.pow(pubExp) / pubDiv;
+const pubExp = 2;
+var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
-`\\frac{{${symbol}}^{${pubExp}}}{${pubDiv}}`;
+`{${symbol}}^{${pubExp}}`;
 
 const locStrings =
 {

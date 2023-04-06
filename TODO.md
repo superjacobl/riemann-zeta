@@ -22,6 +22,8 @@ Exponents obviously is an option but that boring
 - If we use the black hole idea it could be good because at high values of zeta(s) t will be very high and therefore make it move faster increasing delta
 - I think the black hole idea is my favourite. We could make it a tiered milestone by changing the numbers
 
+- Random idea that I'm putting out here: make some w milestones. This can allow you to use milestones to boost delta. Also, might make for interesting ms. Though I'm not sure if we want anymore ms. I like ms, but if we have solarswap in it any more ms will kill everyone. Also, I dont know weather we even need/want more milestones but sharing and idea can't hurt
+
 - An upgrade that increases t by some amount that increases each time to buy it. something like: :uparrow:t by 2^n and n just keeps going up the more you buy it, so t can reach really high levels as n keeps increases. Maybe programmatically the actual equation could be t = t1 + t2, t1dot = (whatever tdot was), t2 = this upgrade, so it would actually be: t2 = 2^(n+1) - 1.
   1. It's probably a good idea to skip some value of n here because increasing t by 4 isn't going to help anyone.
   2. I also envisioned it as an expensive upgrade, as it feels like it could get out of hand.
