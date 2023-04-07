@@ -725,7 +725,7 @@ var tick = (elapsedTime, multiplier) =>
     let bMTerm = getbMarginTerm(b.level);
 
     normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-    (zTerm.pow(bTerm) + bMTerm);
+    (zTerm/bTerm + bMTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -756,7 +756,7 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|^b+10^{-b}}`;
+    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-b}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
