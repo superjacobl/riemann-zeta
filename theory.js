@@ -20,7 +20,7 @@ var getDescription = (language) =>
     let descs =
     {
         en:
-`A function that goes around.`,
+`We need a better introduction for the Zeta function.`,
     };
 
     return descs[language] || descs.en;
@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.23;
+var version = 0.25;
 
 let gameOffline = false;
 let t = 0;
@@ -36,7 +36,7 @@ let t_dot = 0;
 let tTerm = BigNumber.ZERO;
 let zTerm = BigNumber.ZERO;
 let derivTerm = BigNumber.ZERO;
-let rCoord = 0;
+let rCoord = -1.4603545088095868;
 let iCoord = 0;
 let quaternaryEntries =
 [
@@ -53,7 +53,7 @@ const HALF = BigNumber.from(0.5);
 const resolution = 4;
 const speedMaxLevel = 1;
 const getSpeed = (level) => 1 << (level * 2);
-const getBlackholeSpeed = (z) => (z + 0.2) / 10;
+const getBlackholeSpeed = (z) => Math.min(z**2 + 0.02, 1/resolution);
 
 const c1ExpMaxLevel = 3;
 // The first 3 zeta zeroes lol
@@ -71,10 +71,10 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 10;
-const bCost = new ExponentialCost(1e6, Math.log2(1e6));
-const getb = (level) => BigNumber.ONE + HALF * level;
-const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
+const bMaxLevel = 8;
+const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const getb = (level) => BigNumber.ONE + HALF * (level/2);
+const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
 const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
@@ -89,10 +89,11 @@ const permaCosts =
     BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new LinearCost(2.5, 2.5);
+const milestoneCost = new CompositeCost(2, new LinearCost(2.5, 2.5),
+new LinearCost(10, 5));
 
 const tauRate = 0.1;
-const pubExp = 2.1;
+const pubExp = 2;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
@@ -101,11 +102,12 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.3, Black Hole Edition',
+        versionName: 'v0.2.5, Not the Bees!',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
-        blackhole: '\\text{a black hole at the origin}',
+        blackhole: 'Unleash a black hole',
+        blackholeInfo: 'Decreases {0} as {1} gets closer to the origin'
     }
 };
 
@@ -124,6 +126,192 @@ let getLoc = (name, lang = menuLang) =>
         return locStrings.en[name];
     
     return `String missing: ${lang}.${name}`;
+}
+
+let interpolate = (t) =>
+{
+    let v1 = t*t;
+    let v2 = 1 - (1-t)*(1-t);
+    return v1*(1-t) + v2*t;
+}
+
+const zeta01Table =
+[
+    [
+        -1.4603545088095868,
+        0
+    ],
+    [
+        -1.4553643660270397,
+        -0.097816768303847834
+    ],
+    [
+        -1.4405420816461549,
+        -0.19415203999960912
+    ],
+    [
+        -1.4163212212231056,
+        -0.28759676077859003
+    ],
+    [
+        -1.3833896356482762,
+        -0.37687944704548237
+    ],
+    [
+        -1.342642133546631,
+        -0.46091792561979039
+    ],
+    [
+        -1.2951228211781993,
+        -0.53885377540755575
+    ],
+    [
+        -1.241963631033884,
+        -0.61006813708679553
+    ],
+    [
+        -1.1843251208316332,
+        -0.67417998953208147
+    ],
+    [
+        -1.1233443487784422,
+        -0.73102985025790079
+    ],
+    [
+        -1.0600929156957051,
+        -0.78065292187264657
+    ],
+    [
+        -0.99554650742447182,
+        -0.82324597632456875
+    ],
+    [
+        -0.93056577332974644,
+        -0.85913190352918178
+    ],
+    [
+        -0.86588730259376534,
+        -0.88872508711130638
+    ],
+    [
+        -0.80212284363487529,
+        -0.91249984322356881
+    ],
+    [
+        -0.73976469567777448,
+        -0.93096325430469185
+    ],
+    [
+        -0.679195280748696,
+        -0.94463296464946644
+    ],
+    [
+        -0.62069916587171792,
+        -0.954019930248939
+    ],
+    [
+        -0.56447615104191817,
+        -0.95961573448940385
+    ],
+    [
+        -0.5106543967354793,
+        -0.96188386780424429
+    ],
+    [
+        -0.45930289034601818,
+        -0.96125428450587913
+    ],
+    [
+        -0.41044282155026063,
+        -0.95812055392531381
+    ],
+    [
+        -0.36405764581325084,
+        -0.95283898111582577
+    ],
+    [
+        -0.32010176657189976,
+        -0.94572915808929037
+    ],
+    [
+        -0.27850786866599236,
+        -0.93707550120555738
+    ],
+    [
+        -0.23919299859739693,
+        -0.92712942212746241
+    ],
+    [
+        -0.20206352115099815,
+        -0.91611186212496687
+    ],
+    [
+        -0.167019095423191,
+        -0.90421598956695581
+    ],
+    [
+        -0.13395581328989362,
+        -0.89160991763812381
+    ],
+    [
+        -0.10276863503870383,
+        -0.87843934448552852
+    ],
+    [
+        -0.073353244053944222,
+        -0.86483005263542623
+    ],
+    [
+        -0.045607427657960491,
+        -0.850890230359152
+    ],
+    [
+        -0.019432076150895955,
+        -0.836712596410336
+    ],
+    [
+        0.0052681222316752355,
+        -0.82237632273994077
+    ],
+    [
+        0.028584225755178324,
+        -0.80794875873014349
+    ],
+    [
+        0.050602769823360656,
+        -0.7934869662472297
+    ],
+    [
+        0.071405640533511838,
+        -0.77903907825261309
+    ],
+    [
+        0.091070056261173163,
+        -0.76464549549431216
+    ],
+    [
+        0.10966862939766708,
+        -0.750339936434268
+    ],
+    [
+        0.12726948615366909,
+        -0.73615035542727014
+    ],
+    [
+        0.14393642707718907,
+        -0.722099743531673
+    ]
+];
+
+// Linear interpolation lol
+let zetaSmall = (t) =>
+{
+    let fullIndex = t * (zeta01Table.length - 1);
+    let index = Math.floor(fullIndex);
+    let offset = fullIndex - index;
+    let re = zeta01Table[index][0]*(1-offset) + zeta01Table[index+1][0]*offset;
+    let im = zeta01Table[index][1]*(1-offset) + zeta01Table[index+1][1]*offset;
+    return [re, im, re*re + im*im];
 }
 
 let even = (n) =>
@@ -269,7 +457,7 @@ let C = (n, z) =>
 let logLookup = [];
 let sqrtLookup = [];
 
-let zeta = (t, n) =>
+let riemannSiegelZeta = (t, n) =>
 {
     let Z = 0;
     let R = 0;
@@ -297,6 +485,22 @@ let zeta = (t, n) =>
 
     Z += R;
     return [Z*Math.cos(th), -Z*Math.sin(th), Z];
+}
+
+let zeta = (t) =>
+{
+    if(t > 1)
+        return riemannSiegelZeta(t, 4);
+    if(t < 0.1)
+        return zetaSmall(t);
+    let offset = interpolate((t-0.1) * 10/9);
+    let a = zetaSmall(t);
+    let b = riemannSiegelZeta(t, 4);
+    return [
+        a[0]*(1-offset) + b[0]*offset,
+        a[1]*(1-offset) + b[1]*offset,
+        a[2]*(1-offset) + Math.abs(b[2])*offset
+    ];
 }
 
 /**
@@ -356,7 +560,7 @@ var init = () =>
     */
     {
         let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `b=${getb(level).toString(1)}`;
+        let getInfo = (level) => `b=${getb(level).toString()}`;
         b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
@@ -415,7 +619,11 @@ var init = () =>
         c1ExpMs.getInfo = (amount) =>
         Localization.getUpgradeIncCustomExpInfo('c_1',
         c1ExpTable[c1ExpMs.level + amount] - c1ExpTable[c1ExpMs.level] || 0);
-        c1ExpMs.boughtOrRefunded = (_) => theory.invalidatePrimaryEquation();
+        c1ExpMs.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            updateAvailability();
+        }
     }
     /* Speed/exp
     Tradeoff.
@@ -462,10 +670,10 @@ var init = () =>
     */
     {
         blackholeMs = theory.createMilestoneUpgrade(4, 1);
-        blackholeMs.description = Localization.getUpgradeUnlockDesc(
-        getLoc('blackhole'));
-        blackholeMs.info = Localization.getUpgradeUnlockInfo(
-        getLoc('blackhole'));
+        blackholeMs.description = getLoc('blackhole');
+        blackholeMs.info = Localization.format(getLoc('blackholeInfo'),
+        Utils.getMath('\\dot{t}'), Utils.getMath('\\zeta(s)'));
+        blackholeMs.isAvailable = false;
     }
 
     theory.primaryEquationScale = 0.96;
@@ -480,6 +688,8 @@ var updateAvailability = () =>
     w1.isAvailable = derivMs.level > 0;
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
+    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
+    w2Ms.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
@@ -498,20 +708,24 @@ var tick = (elapsedTime, multiplier) =>
     let w2Term = w2Ms.level ? getw2(w2.level) : BigNumber.ONE;
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
-    let z = zeta(t, 4);
+    let bTerm = getb(b.level);
+    let z = zeta(t);
+    if(t<0.25)
+        log(`t=${t} ${z[0]} + ${z[1]}i`)
     if(derivMs.level)
     {
         let dr = z[0] - rCoord;
         let di = z[1] - iCoord;
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
-        derivCurrency.value += derivTerm * w1Term * w2Term * bonus;
+        derivCurrency.value += derivTerm.pow(bTerm) * w1Term * w2Term * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
-    let bTerm = getbTerm(b.level);
+    let bMTerm = getbMarginTerm(b.level);
 
-    normCurrency.value += tTerm*c1Term*c2Term*w1Term*bonus / (zTerm+bTerm);
+    normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
+    (zTerm/bTerm + bMTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -542,14 +756,14 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w_1` : ''}}{|\\zeta(\\frac{1}{2}+it)|+10^{-b}}`;
+    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-b}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 60;
         return rhoPart;
     }
     let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
-    \\times|\\zeta '(s)|`;
+    \\times|\\zeta '(s)|^b`;
     theory.primaryEquationHeight = 84;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
@@ -588,6 +802,8 @@ var getCurrencyFromTau = (tau) =>
 var postPublish = () =>
 {
     t = 0;
+    rCoord = -1.4603545088095868;
+    iCoord = 0;
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
