@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.24;
+var version = 0.25;
 
 let gameOffline = false;
 let t = 0;
@@ -72,9 +72,9 @@ const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 8;
-const bCost = new ExponentialCost(1e6, Math.log2(1e6));
+const bCost = new ExponentialCost(1e6, Math.log2(1e8));
 const getb = (level) => BigNumber.ONE + HALF * (level/2);
-const getbTerm = (level) => BigNumber.TEN.pow(-getb(level));
+const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
 const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
@@ -102,7 +102,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.4, WIP',
+        versionName: 'v0.2.5, Not the Bees!',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -708,6 +708,7 @@ var tick = (elapsedTime, multiplier) =>
     let w2Term = w2Ms.level ? getw2(w2.level) : BigNumber.ONE;
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
+    let bTerm = getb(b.level);
     let z = zeta(t);
     if(t<0.25)
         log(`t=${t} ${z[0]} + ${z[1]}i`)
@@ -716,15 +717,15 @@ var tick = (elapsedTime, multiplier) =>
         let dr = z[0] - rCoord;
         let di = z[1] - iCoord;
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
-        derivCurrency.value += derivTerm * w1Term * w2Term * bonus;
+        derivCurrency.value += derivTerm.pow(bTerm) * w1Term * w2Term * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
-    let bTerm = getbTerm(b.level);
+    let bMTerm = getbMarginTerm(b.level);
 
     normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-    (zTerm/getb(b.level) + bTerm);
+    (zTerm/bTerm + bMTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -762,7 +763,7 @@ var getPrimaryEquation = () =>
         return rhoPart;
     }
     let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
-    \\times|\\zeta '(s)|`;
+    \\times|\\zeta '(s)|^b`;
     theory.primaryEquationHeight = 84;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
