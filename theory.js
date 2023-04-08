@@ -808,6 +808,7 @@ var postPublish = () =>
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
+    theory.invalidateQuaternaryValues();
     updateAvailability();
 }
 
