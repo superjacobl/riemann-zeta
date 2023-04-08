@@ -713,8 +713,6 @@ var tick = (elapsedTime, multiplier) =>
     let c2Term = getc2(c2.level);
     let bTerm = getb(b.level);
     let z = zeta(t);
-    if(t<0.25)
-        log(`t=${t} ${z[0]} + ${z[1]}i`)
     if(derivMs.level)
     {
         let dr = z[0] - rCoord;
