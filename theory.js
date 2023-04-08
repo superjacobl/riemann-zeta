@@ -696,6 +696,9 @@ var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
+    if(!c1.level)
+        return;
+
     t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
     1 / resolution);
     let dt = t_dot * elapsedTime;
