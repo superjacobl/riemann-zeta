@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
@@ -89,8 +89,8 @@ const permaCosts =
     BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new CompositeCost(2, new LinearCost(2.5, 2.5),
-new LinearCost(10, 5));
+const milestoneCost = new CompositeCost(1, new ConstantCost(2.5),
+new LinearCost(5, 7.5));
 
 const tauRate = 0.1;
 const pubExp = 2;
