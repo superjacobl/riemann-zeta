@@ -38,3 +38,8 @@ Exponents obviously is an option but that boring
 ### Milestones
 
 - Increase t_dot by 4x, but sqrts the |z| portion
+
+### Notes
+
+- Second publish is too fast
+  - Add a pub div? Need to assess the situation with later progression
