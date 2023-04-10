@@ -83,7 +83,7 @@ const permaCosts =
 [
     BigNumber.TEN.pow(8),
     BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(21)
+    BigNumber.TEN.pow(16)
 ];
 
 const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
