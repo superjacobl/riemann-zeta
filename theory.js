@@ -79,21 +79,21 @@ const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.4), 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1e10, Math.log2(10));
+const w2Cost = new ExponentialCost(1e10, Math.log2(100));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
     BigNumber.TEN.pow(8),
-    BigNumber.TEN.pow(12),
-    BigNumber.TEN.pow(14)
+    BigNumber.TEN.pow(14),
+    BigNumber.TEN.pow(21)
 ];
 
 const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
 new LinearCost(5, 7.5));
 
 const tauRate = 0.1;
-const pubExp = 2;
+const pubExp = 2.1;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
