@@ -90,7 +90,7 @@ const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
 new LinearCost(5, 7.5));
 
 const tauRate = 0.1;
-const pubExp = 2;
+const pubExp = 2.1;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
 `{${symbol}}^{${pubExp}}`;
