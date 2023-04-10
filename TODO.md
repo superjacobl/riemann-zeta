@@ -4,7 +4,7 @@
 
 - 0.2.6 (dev)
   - c1 c2 alone can easily reach publication without w2
-- 0.2.6 (bependence)
+- 0.2.7 (bependence)
   - Early game too slow
 
 ## Design

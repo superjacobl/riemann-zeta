@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.26;
+var version = 0.27;
 
 let gameOffline = false;
 let t = 0;
@@ -100,7 +100,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.6, WIP',
+        versionName: 'v0.2.7, WIP',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
