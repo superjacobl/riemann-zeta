@@ -65,10 +65,10 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.6));
+const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.7));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 2.4);
+const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 8;
@@ -79,17 +79,17 @@ const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.4), 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1e10, Math.log2(100));
+const w2Cost = new ExponentialCost(1e10, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
-    BigNumber.TEN.pow(9),
-    BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(21)
+    BigNumber.TEN.pow(8),
+    BigNumber.TEN.pow(12),
+    BigNumber.TEN.pow(14)
 ];
 
-const milestoneCost = new CompositeCost(1, new ConstantCost(2.5),
+const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
 new LinearCost(5, 7.5));
 
 const tauRate = 0.1;
