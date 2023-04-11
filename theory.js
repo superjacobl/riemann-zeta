@@ -30,7 +30,6 @@ var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'for maths consultation';
 var version = 0.27;
 
-let gameOffline = false;
 let t = 0;
 let t_dot = 0;
 let tTerm = BigNumber.ZERO;
