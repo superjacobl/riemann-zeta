@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
+import { ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { Utils } from '../api/Utils';
@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.27;
+var version = 0.25;
 
 let gameOffline = false;
 let t = 0;
@@ -46,10 +46,13 @@ let quaternaryEntries =
 ];
 
 const scale = 4;
+const HALF = BigNumber.from(0.5);
 
 // All balance parameters are aggregated for ease of access
 
 const resolution = 4;
+const speedMaxLevel = 1;
+const getSpeed = (level) => 1 << (level * 2);
 const getBlackholeSpeed = (z) => Math.min(z**2 + 0.02, 1/resolution);
 
 const c1ExpMaxLevel = 3;
@@ -62,45 +65,44 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.7));
+const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.6));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 2.8);
+const c2Cost = new ExponentialCost(1400, 2.4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 8;
-const bCost = new ExponentialCost(1e6, Math.log2(1e12));
-const getb = (level) => BigNumber.ONE + level/4;
+const bCost = new ExponentialCost(1e6, Math.log2(1e8));
+const getb = (level) => BigNumber.ONE + HALF * (level/2);
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.25), 6);
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, 4.4), 10);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1, Math.log2(10));
+const w2Cost = new ExponentialCost(1, Math.log2(100));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
-    BigNumber.TEN.pow(8),
+    BigNumber.TEN.pow(9),
     BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(16)
+    BigNumber.TEN.pow(21)
 ];
 
-const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
-new LinearCost(5, 7.5));
+const milestoneCost = new CompositeCost(2, new LinearCost(2.5, 2.5),
+new LinearCost(10, 5));
 
 const tauRate = 0.1;
-const pubExp = 2.1;
-const pubMult = 4;
-var getPublicationMultiplier = (tau) => tau.pow(pubExp) * pubMult;
+const pubExp = 2;
+var getPublicationMultiplier = (tau) => tau.pow(pubExp);
 var getPublicationMultiplierFormula = (symbol) =>
-`${pubMult}\\times{${symbol}}^{${pubExp}}`;
+`{${symbol}}^{${pubExp}}`;
 
 const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.7, WIP',
+        versionName: 'v0.2.5, Not the Bees!',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -676,7 +678,7 @@ var init = () =>
 
     theory.primaryEquationScale = 0.96;
     theory.secondaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 54;
+    theory.secondaryEquationHeight = 48;
 
     updateAvailability();
 }
@@ -694,9 +696,6 @@ var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
 
 var tick = (elapsedTime, multiplier) =>
 {
-    if(!c1.level)
-        return;
-
     t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
     1 / resolution);
     let dt = t_dot * elapsedTime;
@@ -711,6 +710,8 @@ var tick = (elapsedTime, multiplier) =>
     let c2Term = getc2(c2.level);
     let bTerm = getb(b.level);
     let z = zeta(t);
+    if(t<0.25)
+        log(`t=${t} ${z[0]} + ${z[1]}i`)
     if(derivMs.level)
     {
         let dr = z[0] - rCoord;
@@ -806,7 +807,6 @@ var postPublish = () =>
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
-    theory.invalidateQuaternaryValues();
     updateAvailability();
 }
 
