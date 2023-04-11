@@ -73,7 +73,7 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e12));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.4), 6);
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.25), 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const w2Cost = new ExponentialCost(1, Math.log2(10));
