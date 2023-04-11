@@ -676,7 +676,7 @@ var init = () =>
 
     theory.primaryEquationScale = 0.96;
     theory.secondaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 48;
+    theory.secondaryEquationHeight = 54;
 
     updateAvailability();
 }
