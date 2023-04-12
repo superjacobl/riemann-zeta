@@ -28,7 +28,7 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.27;
+var version = 0.28;
 
 let gameOffline = false;
 let t = 0;
@@ -73,7 +73,8 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e12));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.25), 6);
+const w1Cost = new StepwiseCost(new ExponentialCost(150000, Math.log2(100)/3),
+6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const w2Cost = new ExponentialCost(1, Math.log2(10));
@@ -100,7 +101,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.7',
+        versionName: 'v0.2.8, WIP',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
