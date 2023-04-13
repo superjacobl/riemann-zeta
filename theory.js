@@ -28,12 +28,11 @@ var getDescription = (language) =>
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation';
-var version = 0.27;
+var version = 0.28;
 
 let t = 0;
 let t_dot = 0;
-let tTerm = BigNumber.ZERO;
-let zTerm = BigNumber.ZERO;
+let zTerm = BigNumber.from(-1.4603545088095868);
 let derivTerm = BigNumber.ZERO;
 let rCoord = -1.4603545088095868;
 let iCoord = 0;
@@ -49,7 +48,7 @@ const scale = 4;
 // All balance parameters are aggregated for ease of access
 
 const resolution = 4;
-const getBlackholeSpeed = (z) => Math.min(z**2 + 0.02, 1/resolution);
+const getBlackholeSpeed = (z) => Math.min(z**2 + 0.004, 1/resolution);
 
 const c1ExpMaxLevel = 3;
 // The first 3 zeta zeroes lol
@@ -72,7 +71,8 @@ const bCost = new ExponentialCost(1e6, Math.log2(1e12));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
-const w1Cost = new StepwiseCost(new ExponentialCost(150000, 2.25), 6);
+const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
+6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
 const w2Cost = new ExponentialCost(1, Math.log2(10));
@@ -99,7 +99,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.7',
+        versionName: 'v0.2.8',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -701,7 +701,7 @@ var tick = (elapsedTime, multiplier) =>
     let dt = t_dot * elapsedTime;
     t += dt;
 
-    tTerm = BigNumber.from(t);
+    let tTerm = BigNumber.from(t);
     let bonus = BigNumber.from(elapsedTime * multiplier) *
     theory.publicationMultiplier;
     let w1Term = derivMs.level ? getw1(w1.level) : BigNumber.ONE;
@@ -800,6 +800,9 @@ var getCurrencyFromTau = (tau) =>
 var postPublish = () =>
 {
     t = 0;
+    t_dot = 0;
+    zTerm = BigNumber.from(-1.4603545088095868);
+    derivTerm = BigNumber.ZERO;
     rCoord = -1.4603545088095868;
     iCoord = 0;
     theory.invalidatePrimaryEquation();
