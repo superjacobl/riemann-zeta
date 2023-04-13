@@ -20,14 +20,29 @@ var getDescription = (language) =>
     let descs =
     {
         en:
-`We need a better introduction for the Zeta function.`,
+`The function now known as the Riemann zeta function was first defined by ` +
+`Euler for integers greater than 1 as an infinite series:
+zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+The definition was later extended to real numbers by Chebyshev, and to the ` +
+`complex plane by Riemann. However, as it diverges on all s with a real ` +
+`component less than 1, a special version of the function was to be defined ` +
+`there in order to make the function continuous. This is known as an ` +
+`analytic continuation, and it is related to this infamous meme:
+1 + 2 + 3 + 4 + ... = -1/12
+
+In this theory, we will be examining the zeta function on the line ` +
+`perpendicular to the y-axis at x = 0.5, known as the critical line. In ` +
+`1859, it was hypothesised by Riemann himself that, other than the so-called ` +
+`'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
+`other root of the function lies on this critical line.`,
     };
 
     return descs[language] || descs.en;
 }
 var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
-'for maths consultation';
+'for maths consultation\nXLII, for developing the sim and helping to create ' +
+'sim strategies';
 var version = 0.28;
 
 let gameOffline = false;
