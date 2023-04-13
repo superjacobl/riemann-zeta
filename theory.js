@@ -43,12 +43,12 @@ var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation\nXLII, for developing the sim and helping to create ' +
 'sim strategies';
-var version = 0.28;
+var version = 0.29;
 
 let gameOffline = false;
 let t = 0;
 let t_dot = 0;
-let zTerm = BigNumber.from(-1.4603545088095868);
+let zTerm = BigNumber.from(1.4603545088095868);
 let derivTerm = BigNumber.ZERO;
 let rCoord = -1.4603545088095868;
 let iCoord = 0;
@@ -115,7 +115,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.8',
+        versionName: 'v0.2.9, WIP',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -324,7 +324,7 @@ let zetaSmall = (t) =>
     let offset = fullIndex - index;
     let re = zeta01Table[index][0]*(1-offset) + zeta01Table[index+1][0]*offset;
     let im = zeta01Table[index][1]*(1-offset) + zeta01Table[index+1][1]*offset;
-    return [re, im, re*re + im*im];
+    return [re, im, Math.sqrt(re*re + im*im)];
 }
 
 let even = (n) =>
@@ -817,7 +817,7 @@ var postPublish = () =>
 {
     t = 0;
     t_dot = 0;
-    zTerm = BigNumber.from(-1.4603545088095868);
+    zTerm = BigNumber.from(1.4603545088095868);
     derivTerm = BigNumber.ZERO;
     rCoord = -1.4603545088095868;
     iCoord = 0;
