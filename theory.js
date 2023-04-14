@@ -787,8 +787,7 @@ var getSecondaryEquation = () =>
 {
     return `\\begin{array}{c}\\zeta(s)=2^s\\pi^{s-1}\\sin
     \\left(\\frac{\\pi s}{2}\\right)\\int_0^{\\infty}\\frac{dx}{x^s(e^x-1)}\\\\
-    ${theory.latexSymbol}=\\max\\rho ^{${tauRate}}
-    \\end{array}`;
+    \\enspace${theory.latexSymbol}=\\max\\rho ^{${tauRate}}\\end{array}`;
 }
 
 var getTertiaryEquation = () =>
