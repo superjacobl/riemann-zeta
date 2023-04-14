@@ -106,7 +106,7 @@ new LinearCost(5, 7.5));
 
 const tauRate = 0.1;
 const pubExp = 2.1;
-const pubMult = 4;
+const pubMult = 2;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp) * pubMult;
 var getPublicationMultiplierFormula = (symbol) =>
 `${pubMult}\\times{${symbol}}^{${pubExp}}`;
