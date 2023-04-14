@@ -1,9 +1,14 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
+import { ui } from '../api/ui/UI';
 import { Utils } from '../api/Utils';
 import { Vector3 } from '../api/Vector3';
+import { Color } from '../api/ui/properties/Color';
+import { LayoutOptions } from '../api/ui/properties/LayoutOptions';
+import { TextAlignment } from '../api/ui/properties/TextAlignment';
+import { Thickness } from '../api/ui/properties/Thickness';
 
 var id = 'riemann_zeta_f';
 var getName = (language) =>
@@ -43,9 +48,10 @@ var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation\nXLII, for developing the sim and helping to create ' +
 'sim strategies';
-var version = 0.29;
+var version = 0.3;
 
 let gameOffline = false;
+let pubTime = 0;
 let t = 0;
 let t_dot = 0;
 let zTerm = BigNumber.from(1.4603545088095868);
@@ -101,9 +107,6 @@ const permaCosts =
     BigNumber.TEN.pow(16)
 ];
 
-const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
-new LinearCost(5, 7.5));
-
 const tauRate = 0.1;
 const pubExp = 2.1;
 const pubMult = 2;
@@ -111,11 +114,24 @@ var getPublicationMultiplier = (tau) => tau.pow(pubExp) * pubMult;
 var getPublicationMultiplierFormula = (symbol) =>
 `${pubMult}\\times{${symbol}}^{${pubExp}}`;
 
+const milestoneCost = new CustomCost((level) =>
+{
+    if(level == 0) return BigNumber.from(21 * tauRate);
+    if(level == 1) return BigNumber.from(50 * tauRate);
+    if(level == 2) return BigNumber.from(150 * tauRate);
+    if(level == 3) return BigNumber.from(250 * tauRate);
+    if(level == 4) return BigNumber.from(350 * tauRate);
+    if(level == 5) return BigNumber.from(400 * tauRate);
+    return Infinity;
+});
+
+
 const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.9',
+        versionName: 'v0.3 ??? WIP',
+        pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -714,6 +730,7 @@ var tick = (elapsedTime, multiplier) =>
     if(!c1.level)
         return;
 
+    pubTime += elapsedTime;
     t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
     1 / resolution);
     let dt = t_dot * elapsedTime;
@@ -760,6 +777,34 @@ var getEquationOverlay = () =>
                 verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: getLoc('versionName'),
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLatexLabel
+            ({
+                horizontalTextAlignment: TextAlignment.CENTER,
+                margin: new Thickness(6, 4),
+                text: () =>
+                {
+                    let minutes = Math.floor(pubTime / 60);
+                    let seconds = pubTime - minutes*60;
+                    let timeString;
+                    if(minutes > 60)
+                    {
+                        let hours = Math.floor(minutes / 60);
+                        minutes -= hours*60;
+                        timeString = `${hours}:${
+                        minutes.toString().padStart(2, '0')}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    else
+                    {
+                        timeString = `${minutes.toString()}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    return Localization.format(getLoc('pubTime'),
+                    timeString);
+                },
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             })
@@ -821,6 +866,7 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
+    pubTime = 0;
     t = 0;
     t_dot = 0;
     zTerm = BigNumber.from(1.4603545088095868);
@@ -837,7 +883,8 @@ var postPublish = () =>
 var getInternalState = () => JSON.stringify
 ({
     version: version,
-    t: t
+    t: t,
+    pubTime: pubTime
 })
 
 var setInternalState = (stateStr) =>
@@ -848,6 +895,8 @@ var setInternalState = (stateStr) =>
     let state = JSON.parse(stateStr);
     if('t' in state)
         t = state.t;
+    if('pubTime' in state)
+        pubTime = state.pubTime;
 
     theory.invalidatePrimaryEquation();
     theory.invalidateTertiaryEquation();
