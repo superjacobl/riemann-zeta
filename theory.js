@@ -119,6 +119,7 @@ const locStrings =
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
+        condition: '\\text{{if }}{{{0}}}',
         blackhole: 'Unleash a black hole',
         blackholeInfo: 'Decreases {0} as {1} gets closer to the origin'
     }
@@ -692,7 +693,7 @@ var init = () =>
     theory.primaryEquationScale = 0.96;
     // theory.primaryEquationHeight = 84;
     theory.secondaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 60;
+    theory.secondaryEquationHeight = 66;
 
     updateAvailability();
 }
@@ -785,8 +786,10 @@ var getPrimaryEquation = () =>
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta(s)=2^s\\pi^{s-1}\\sin
-    \\left(\\frac{\\pi s}{2}\\right)\\int_0^{\\infty}\\frac{dx}{x^s(e^x-1)}\\\\
+    return `\\begin{array}{c}
+    \\zeta(s)=\\frac{1}{1-2^{1-s}}\\sum_{n=1}^{\\infty}
+    \\frac{(-1)^{n+1}}{n^s},\\enspace ${Localization.format(getLoc('condition'),
+    '0<\\Re(s)<1')}\\\\
     \\enspace${theory.latexSymbol}=\\max\\rho ^{${tauRate}}\\end{array}`;
 }
 
