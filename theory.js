@@ -775,12 +775,12 @@ var getPrimaryEquation = () =>
     ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-b}}`;
     if(!derivMs.level)
     {
-        theory.primaryEquationHeight = 60;
+        theory.primaryEquationHeight = 72;
         return rhoPart;
     }
     let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
     \\times|\\zeta '(s)|^b`;
-    theory.primaryEquationHeight = 84;
+    theory.primaryEquationHeight = 90;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 
@@ -789,7 +789,7 @@ var getSecondaryEquation = () =>
     return `\\begin{array}{c}
     \\zeta(s)=\\frac{1}{1-2^{1-s}}\\sum_{n=1}^{\\infty}
     \\frac{(-1)^{n+1}}{n^s},\\enspace ${Localization.format(getLoc('condition'),
-    '0<\\Re(s)<1')}\\\\
+    '0<\\Re(s)<1')}\\\\\\\\
     \\enspace${theory.latexSymbol}=\\max\\rho ^{${tauRate}}\\end{array}`;
 }
 
