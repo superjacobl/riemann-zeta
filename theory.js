@@ -137,7 +137,7 @@ let getLoc = (name, lang = menuLang) =>
 
     if(name in locStrings.en)
         return locStrings.en[name];
-    
+
     return `String missing: ${lang}.${name}`;
 }
 
@@ -690,8 +690,9 @@ var init = () =>
     }
 
     theory.primaryEquationScale = 0.96;
+    // theory.primaryEquationHeight = 84;
     theory.secondaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 54;
+    theory.secondaryEquationHeight = 60;
 
     updateAvailability();
 }
@@ -784,8 +785,9 @@ var getPrimaryEquation = () =>
 
 var getSecondaryEquation = () =>
 {
-    return `\\begin{array}{c}\\zeta(s)=\\frac{1}{\\Gamma(s)}\\int_{0}^{\\infty}
-    \\frac{x^{s-1}\\,dx}{e^x-1},&${theory.latexSymbol}=\\max\\rho ^{${tauRate}}
+    return `\\begin{array}{c}\\zeta(s)=2^s\\pi^{s-1}\\sin
+    \\left(\\frac{\\pi s}{2}\\right)\\int_0^{\\infty}\\frac{dx}{x^s(e^x-1)}\\\\
+    ${theory.latexSymbol}=\\max\\rho ^{${tauRate}}
     \\end{array}`;
 }
 
