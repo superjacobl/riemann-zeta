@@ -33,10 +33,10 @@ The definition was later extended to real numbers by Chebyshev, and to the ` +
 `component less than 1, a special version of the function was to be defined ` +
 `there in order to make the function continuous. This is known as an ` +
 `analytic continuation, and it is related to this infamous meme:
-1 + 2 + 3 + 4 + ... = -1/12
+1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
 
 In this theory, we will be examining the zeta function on the line ` +
-`perpendicular to the y-axis at x = 0.5, known as the critical line. In ` +
+`perpendicular to the x-axis at x = 0.5, known as the critical line. In ` +
 `1859, it was hypothesised by Riemann himself that, other than the so-called ` +
 `'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
 `other root of the function lies on this critical line.`,
@@ -543,9 +543,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
-var warpPerma;
-
-var c1ExpMs, speedMs, derivMs, w2Ms, blackholeMs;
+var c1ExpMs, derivMs, w2Ms, blackholeMs;
 
 var c1, c2, b, w1, w2;
 
@@ -666,8 +664,8 @@ var init = () =>
     //     `\\times${getSpeed(1)}`);
     //     speedMs.isAvailable = false;
     // }
-    /* Unlock omega
-    Benefits from speed/exp.
+    /* Unlock delta
+    Based on the 'derivative' of zeta (roughly calculated).
     */
     {
         derivMs = theory.createMilestoneUpgrade(1, 1);
@@ -683,6 +681,7 @@ var init = () =>
         derivMs.canBeRefunded = () => w2Ms.level == 0;
     }
     /* w2
+    Standard doubling.
     */
     {
         w2Ms = theory.createMilestoneUpgrade(3, 1);
@@ -696,7 +695,7 @@ var init = () =>
         w2Ms.isAvailable = false;
     }
     /* Blackhole
-    Tradeoff.
+    Tradeoff. Use for coasting.
     */
     {
         blackholeMs = theory.createMilestoneUpgrade(4, 1);
