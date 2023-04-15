@@ -773,7 +773,6 @@ var getEquationOverlay = () =>
         [
             ui.createLatexLabel
             ({
-                verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: getLoc('versionName'),
                 fontSize: 9,
@@ -781,7 +780,8 @@ var getEquationOverlay = () =>
             }),
             ui.createLatexLabel
             ({
-                horizontalTextAlignment: TextAlignment.CENTER,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 text: () =>
                 {
