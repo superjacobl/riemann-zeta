@@ -97,7 +97,7 @@ const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1, Math.log2(10));
+const w2Cost = new ExponentialCost(1e5, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
@@ -118,10 +118,10 @@ const milestoneCost = new CustomCost((level) =>
 {
     if(level == 0) return BigNumber.from(21 * tauRate);
     if(level == 1) return BigNumber.from(50 * tauRate);
-    if(level == 2) return BigNumber.from(150 * tauRate);
-    if(level == 3) return BigNumber.from(250 * tauRate);
+    if(level == 2) return BigNumber.from(125 * tauRate);
+    if(level == 3) return BigNumber.from(225 * tauRate);
     if(level == 4) return BigNumber.from(350 * tauRate);
-    if(level == 5) return BigNumber.from(400 * tauRate);
+    if(level == 5) return BigNumber.from(500 * tauRate);
     return Infinity;
 });
 
