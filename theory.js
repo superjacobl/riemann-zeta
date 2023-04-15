@@ -89,7 +89,7 @@ const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 8;
-const bCost = new ExponentialCost(1e6, Math.log2(1e12));
+const bCost = new ExponentialCost(1e12, Math.log2(1e24));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
