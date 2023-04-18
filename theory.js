@@ -122,7 +122,7 @@ const milestoneCost = new CustomCost((level) =>
     if(level == 3) return BigNumber.from(225 * tauRate);
     if(level == 4) return BigNumber.from(350 * tauRate);
     if(level == 5) return BigNumber.from(500 * tauRate);
-    return Infinity;
+    return BigNumber.from(-1);
 });
 
 
@@ -130,7 +130,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3 ??? WIP',
+        versionName: 'v0.3, WIP',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
