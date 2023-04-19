@@ -788,7 +788,7 @@ var getEquationOverlay = () =>
                     let minutes = Math.floor(pubTime / 60);
                     let seconds = pubTime - minutes*60;
                     let timeString;
-                    if(minutes > 60)
+                    if(minutes >= 60)
                     {
                         let hours = Math.floor(minutes / 60);
                         minutes -= hours*60;
