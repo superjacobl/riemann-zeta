@@ -88,8 +88,9 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 8;
-const bCost = new ExponentialCost(1e12, Math.log2(1e24));
+const bMaxLevel = 12;
+const bCost = new CompositeCost(8, new ExponentialCost(1e12, Math.log2(1e24)),
+new ExponentialCost(BigNumber.from('1e900'), BigNumber.from('1e100').log2()));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
