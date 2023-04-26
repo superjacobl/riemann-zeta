@@ -89,8 +89,10 @@ const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 12;
-const bCost = new CompositeCost(8, new ExponentialCost(1e12, Math.log2(1e24)),
-new ExponentialCost(BigNumber.from('1e900'), BigNumber.from('1e100').log2()));
+const bCost = new CompositeCost(4, new ExponentialCost(1e9, Math.log2(1e12)),
+new CompositeCost(4,
+new ExponentialCost(BigNumber.from('1e180'), BigNumber.from('1e60').log2()),
+new ExponentialCost(BigNumber.from('1e900'), BigNumber.from('1e100').log2())));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
@@ -131,7 +133,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3, WIP',
+        versionName: 'v0.3b3, WIP',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
