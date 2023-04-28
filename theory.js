@@ -1,9 +1,14 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
+import { ui } from '../api/ui/UI';
 import { Utils } from '../api/Utils';
 import { Vector3 } from '../api/Vector3';
+import { Color } from '../api/ui/properties/Color';
+import { LayoutOptions } from '../api/ui/properties/LayoutOptions';
+import { TextAlignment } from '../api/ui/properties/TextAlignment';
+import { Thickness } from '../api/ui/properties/Thickness';
 
 var id = 'riemann_zeta_f';
 var getName = (language) =>
@@ -28,10 +33,10 @@ The definition was later extended to real numbers by Chebyshev, and to the ` +
 `component less than 1, a special version of the function was to be defined ` +
 `there in order to make the function continuous. This is known as an ` +
 `analytic continuation, and it is related to this infamous meme:
-1 + 2 + 3 + 4 + ... = -1/12
+1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
 
 In this theory, we will be examining the zeta function on the line ` +
-`perpendicular to the y-axis at x = 0.5, known as the critical line. In ` +
+`perpendicular to the x-axis at x = 0.5, known as the critical line. In ` +
 `1859, it was hypothesised by Riemann himself that, other than the so-called ` +
 `'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
 `other root of the function lies on this critical line.`,
@@ -43,8 +48,10 @@ var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
 'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
 'for maths consultation\nXLII, for developing the sim and helping to create ' +
 'sim strategies';
-var version = 0.29;
+var version = 0.3;
 
+let gameOffline = false;
+let pubTime = 0;
 let t = 0;
 let t_dot = 0;
 let zTerm = BigNumber.from(1.4603545088095868);
@@ -81,8 +88,11 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 2.8);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 8;
-const bCost = new ExponentialCost(1e6, Math.log2(1e12));
+const bMaxLevel = 12;
+const bCost = new CompositeCost(4, new ExponentialCost(1e9, Math.log2(1e12)),
+new CompositeCost(4,
+new ExponentialCost(BigNumber.from('1e180'), BigNumber.from('1e60').log2()),
+new ExponentialCost(BigNumber.from('1e900'), BigNumber.from('1e100').log2())));
 const getb = (level) => BigNumber.ONE + level/4;
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 
@@ -90,7 +100,7 @@ const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
-const w2Cost = new ExponentialCost(1, Math.log2(10));
+const w2Cost = new ExponentialCost(1e5, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
@@ -100,9 +110,6 @@ const permaCosts =
     BigNumber.TEN.pow(16)
 ];
 
-const milestoneCost = new CompositeCost(1, new ConstantCost(2.1),
-new LinearCost(5, 7.5));
-
 const tauRate = 0.1;
 const pubExp = 2.1;
 const pubMult = 2;
@@ -110,11 +117,24 @@ var getPublicationMultiplier = (tau) => tau.pow(pubExp) * pubMult;
 var getPublicationMultiplierFormula = (symbol) =>
 `${pubMult}\\times{${symbol}}^{${pubExp}}`;
 
+const milestoneCost = new CustomCost((level) =>
+{
+    if(level == 0) return BigNumber.from(21 * tauRate);
+    if(level == 1) return BigNumber.from(50 * tauRate);
+    if(level == 2) return BigNumber.from(125 * tauRate);
+    if(level == 3) return BigNumber.from(225 * tauRate);
+    if(level == 4) return BigNumber.from(350 * tauRate);
+    if(level == 5) return BigNumber.from(500 * tauRate);
+    return BigNumber.from(-1);
+});
+
+
 const locStrings =
 {
     en:
     {
-        versionName: 'v0.2.9',
+        versionName: 'v0.3',
+        pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -526,9 +546,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
-var warpPerma;
-
-var c1ExpMs, speedMs, derivMs, w2Ms, blackholeMs;
+var c1ExpMs, derivMs, w2Ms, blackholeMs;
 
 var c1, c2, b, w1, w2;
 
@@ -649,8 +667,8 @@ var init = () =>
     //     `\\times${getSpeed(1)}`);
     //     speedMs.isAvailable = false;
     // }
-    /* Unlock omega
-    Benefits from speed/exp.
+    /* Unlock delta
+    Based on the 'derivative' of zeta (roughly calculated).
     */
     {
         derivMs = theory.createMilestoneUpgrade(1, 1);
@@ -666,6 +684,7 @@ var init = () =>
         derivMs.canBeRefunded = () => w2Ms.level == 0;
     }
     /* w2
+    Standard doubling.
     */
     {
         w2Ms = theory.createMilestoneUpgrade(3, 1);
@@ -679,7 +698,7 @@ var init = () =>
         w2Ms.isAvailable = false;
     }
     /* Blackhole
-    Tradeoff.
+    Tradeoff. Use for coasting.
     */
     {
         blackholeMs = theory.createMilestoneUpgrade(4, 1);
@@ -692,7 +711,7 @@ var init = () =>
     theory.primaryEquationScale = 0.96;
     // theory.primaryEquationHeight = 84;
     // theory.secondaryEquationScale = 0.96;
-    theory.secondaryEquationHeight = 54;
+    theory.secondaryEquationHeight = 60;
 
     updateAvailability();
 }
@@ -713,6 +732,7 @@ var tick = (elapsedTime, multiplier) =>
     if(!c1.level)
         return;
 
+    pubTime += elapsedTime;
     t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
     1 / resolution);
     let dt = t_dot * elapsedTime;
@@ -756,9 +776,37 @@ var getEquationOverlay = () =>
         [
             ui.createLatexLabel
             ({
-                verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: getLoc('versionName'),
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLatexLabel
+            ({
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.END,
+                margin: new Thickness(6, 4),
+                text: () =>
+                {
+                    let minutes = Math.floor(pubTime / 60);
+                    let seconds = pubTime - minutes*60;
+                    let timeString;
+                    if(minutes >= 60)
+                    {
+                        let hours = Math.floor(minutes / 60);
+                        minutes -= hours*60;
+                        timeString = `${hours}:${
+                        minutes.toString().padStart(2, '0')}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    else
+                    {
+                        timeString = `${minutes.toString()}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    return Localization.format(getLoc('pubTime'),
+                    timeString);
+                },
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             })
@@ -820,6 +868,7 @@ var getCurrencyFromTau = (tau) =>
 
 var postPublish = () =>
 {
+    pubTime = 0;
     t = 0;
     t_dot = 0;
     zTerm = BigNumber.from(1.4603545088095868);
@@ -836,7 +885,8 @@ var postPublish = () =>
 var getInternalState = () => JSON.stringify
 ({
     version: version,
-    t: t
+    t: t,
+    pubTime: pubTime
 })
 
 var setInternalState = (stateStr) =>
@@ -847,6 +897,8 @@ var setInternalState = (stateStr) =>
     let state = JSON.parse(stateStr);
     if('t' in state)
         t = state.t;
+    if('pubTime' in state)
+        pubTime = state.pubTime;
 
     theory.invalidatePrimaryEquation();
     theory.invalidateTertiaryEquation();
