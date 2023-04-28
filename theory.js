@@ -44,10 +44,10 @@ In this theory, we will be examining the zeta function on the line ` +
 
     return descs[language] || descs.en;
 }
-var authors = 'Martin_mc, Eylanding, propfeds\n\nThanks to:\nGlen Pugh, for ' +
-'his implementation of the Riemann-Siegel formula\nSneaky, Gen & Gaunter, ' +
-'for maths consultation\nXLII, for developing the sim and helping to create ' +
-'sim strategies';
+var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
+'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
+'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
+'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation';
 var version = 0.3;
 
 let gameOffline = false;
