@@ -133,7 +133,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3b3, WIP',
+        versionName: 'v0.3',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
