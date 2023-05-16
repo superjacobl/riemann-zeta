@@ -48,7 +48,7 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation';
-var version = 0.3;
+var version = 0.31;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -133,7 +133,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3',
+        versionName: 'v0.3.1',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
@@ -749,9 +749,10 @@ var tick = (elapsedTime, multiplier) =>
     let z = zeta(t);
     if(derivMs.level)
     {
-        let dr = z[0] - rCoord;
-        let di = z[1] - iCoord;
-        derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) / dt);
+        let tmpZ = zeta(t + 0.0001);
+        let dr = tmpZ[0] - z[0];
+        let di = tmpZ[1] - z[1];
+        derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * 10000);
         derivCurrency.value += derivTerm.pow(bTerm) * w1Term * w2Term * bonus;
     }
     rCoord = z[0];
