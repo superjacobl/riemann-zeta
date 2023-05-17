@@ -82,19 +82,20 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.7));
+const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.699));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 2.8);
+const c2Cost = new ExponentialCost(1400, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 12;
-const bCost = new CompositeCost(4, new ExponentialCost(1e9, Math.log2(1e12)),
-new CompositeCost(4,
-new ExponentialCost(BigNumber.from('1e180'), BigNumber.from('1e60').log2()),
-new ExponentialCost(BigNumber.from('1e900'), BigNumber.from('1e100').log2())));
-const getb = (level) => BigNumber.ONE + level/4;
+const bMaxLevel = 15;
+const bCost = new CompositeCost(3, new ExponentialCost(1e12, Math.log2(1e24)),
+new CompositeCost(5,
+new ExponentialCost(BigNumber.from('1e600'), BigNumber.from('1e60').log2()),
+new ExponentialCost(BigNumber.from('1e960'), BigNumber.from('1e80').log2())));
+const getb = (level) => BigNumber.from(1 + level);
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
+const bMarginTerm = BigNumber.from(1/100);
 
 const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
 6);
@@ -107,19 +108,19 @@ const permaCosts =
 [
     BigNumber.TEN.pow(8),
     BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(16)
+    BigNumber.TEN.pow(21)
 ];
 
 const tauRate = 0.1;
-const pubExp = 2.1;
-const pubMult = 2;
+const pubExp = 2.102;
+const pubMult = BigNumber.TWO;
 var getPublicationMultiplier = (tau) => tau.pow(pubExp) * pubMult;
 var getPublicationMultiplierFormula = (symbol) =>
-`${pubMult}\\times{${symbol}}^{${pubExp}}`;
+`${pubMult.toString(0)}\\times{${symbol}}^{${pubExp}}`;
 
 const milestoneCost = new CustomCost((level) =>
 {
-    if(level == 0) return BigNumber.from(21 * tauRate);
+    if(level == 0) return BigNumber.from(25 * tauRate);
     if(level == 1) return BigNumber.from(50 * tauRate);
     if(level == 2) return BigNumber.from(125 * tauRate);
     if(level == 3) return BigNumber.from(225 * tauRate);
@@ -133,7 +134,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.1',
+        versionName: 'v0.3.1, WIP',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
@@ -591,7 +592,7 @@ var init = () =>
     */
     {
         let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `b=${getb(level).toString()}`;
+        let getInfo = (level) => `b=${getb(level).toString(0)}`;
         b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
@@ -624,8 +625,8 @@ var init = () =>
     }
 
     theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
-    theory.createBuyAllUpgrade(1, normCurrency, permaCosts[1]);
-    theory.createAutoBuyerUpgrade(2, normCurrency, permaCosts[2]);
+    theory.createAutoBuyerUpgrade(1, normCurrency, permaCosts[1]);
+    theory.createBuyAllUpgrade(2, normCurrency, permaCosts[2]);
     /* Free penny
     For testing purposes
     */
@@ -753,15 +754,15 @@ var tick = (elapsedTime, multiplier) =>
         let dr = tmpZ[0] - z[0];
         let di = tmpZ[1] - z[1];
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * 10000);
-        derivCurrency.value += derivTerm.pow(bTerm) * w1Term * w2Term * bonus;
+        derivCurrency.value += derivTerm * BigNumber.TWO.pow(bTerm) * w1Term *
+        w2Term * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
     zTerm = BigNumber.from(z[2]).abs();
-    let bMTerm = getbMarginTerm(b.level);
 
     normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-    (zTerm/bTerm + bMTerm);
+    (zTerm/bTerm + bMarginTerm);
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -820,14 +821,14 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-b}}`;
+    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-2}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 66;
         return rhoPart;
     }
-    let omegaPart = `\\enspace\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
-    \\times|\\zeta '(s)|^b`;
+    let omegaPart = `\\,\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
+    \\times 2^b\\times|\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
     theory.primaryEquationHeight = 72;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
