@@ -88,12 +88,10 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1400, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 15;
-const bCost = new CompositeCost(3, new ExponentialCost(1e12, Math.log2(1e24)),
-new CompositeCost(5,
-new ExponentialCost(BigNumber.from('1e600'), BigNumber.from('1e60').log2()),
-new ExponentialCost(BigNumber.from('1e960'), BigNumber.from('1e80').log2())));
-const getb = (level) => BigNumber.from(1 + level);
+const bMaxLevel = 3;
+const bCost = new CompositeCost(1, new ConstantCost(1e21),
+new ExponentialCost(BigNumber.from('1e600'), BigNumber.from('1e300').log2()));
+const getb = (level) => BigNumber.TWO.pow(level);
 const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
 const bMarginTerm = BigNumber.from(1/100);
 
@@ -104,11 +102,16 @@ const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 const w2Cost = new ExponentialCost(1e5, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
+const w3Cost = new ExponentialCost(BigNumber.TEN.sqrt() *
+BigNumber.from('1e599'), BigNumber.from('1e30').log2());
+const getw3 = (level) => BigNumber.TWO.pow(level);
+
 const permaCosts =
 [
-    BigNumber.TEN.pow(8),
-    BigNumber.TEN.pow(14),
-    BigNumber.TEN.pow(21)
+    BigNumber.from(1e8),
+    BigNumber.from(1e14),
+    BigNumber.from(1e21),
+    BigNumber.from('1e1000')
 ];
 
 const tauRate = 0.1;
@@ -547,9 +550,10 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
     (x < -9.99 ? (x < -99.9 ? 0 : 1) : 2)
 );
 
+var c1, c2, b, w1, w2, w3;
 var c1ExpMs, derivMs, w2Ms, blackholeMs;
+var w3Perma, warpFive;
 
-var c1, c2, b, w1, w2;
 
 var normCurrency, derivCurrency;
 
@@ -557,6 +561,7 @@ var init = () =>
 {
     normCurrency = theory.createCurrency();
     derivCurrency = theory.createCurrency('δ', '\\delta');
+
     /* c1
     A sea one.
     */
@@ -587,18 +592,6 @@ var init = () =>
         c2.getInfo = (amount) => Utils.getMathTo(getInfo(c2.level),
         getInfo(c2.level + amount));
     }
-    /* b
-    A bee.
-    */
-    {
-        let getDesc = (level) => getInfo(level);
-        let getInfo = (level) => `b=${getb(level).toString(0)}`;
-        b = theory.createUpgrade(3, normCurrency, bCost);
-        b.getDescription = (_) => Utils.getMath(getDesc(b.level));
-        b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
-        getInfo(b.level + amount));
-        b.maxLevel = bMaxLevel;
-    }
     /* w1
     A doublew 1.
     */
@@ -623,18 +616,57 @@ var init = () =>
         getInfo(w2.level + amount));
         w2.isAvailable = false;
     }
+    /* w3
+    A doublew 3.
+    */
+    {
+        let getDesc = (level) => `w_3=2^{${level}}`;
+        let getInfo = (level) => `w_3=${getw3(level).toString(0)}`;
+        w3 = theory.createUpgrade(6, derivCurrency, w3Cost);
+        w3.getDescription = (_) => Utils.getMath(getDesc(w3.level));
+        w3.getInfo = (amount) => Utils.getMathTo(getInfo(w3.level),
+        getInfo(w3.level + amount));
+        w3.isAvailable = false;
+    }
+    /* b
+    A bee.
+    */
+    {
+        let getDesc = (level) => `b=2^{${level}}`;;
+        let getInfo = (level) => `b=${getb(level).toString(0)}`;
+        b = theory.createUpgrade(3, normCurrency, bCost);
+        b.getDescription = (_) => Utils.getMath(getDesc(b.level));
+        b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
+        getInfo(b.level + amount));
+        b.maxLevel = bMaxLevel;
+    }
 
     theory.createPublicationUpgrade(0, normCurrency, permaCosts[0]);
     theory.createAutoBuyerUpgrade(1, normCurrency, permaCosts[1]);
     theory.createBuyAllUpgrade(2, normCurrency, permaCosts[2]);
+    /* w3
+    Standard doubling.
+    */
+    {
+        w3Perma = theory.createPermanentUpgrade(3, normCurrency,
+        new ConstantCost(permaCosts[3]));
+        w3Perma.description = Localization.getUpgradeAddTermDesc('w_3');
+        w3Perma.info = Localization.getUpgradeAddTermInfo('w_3');
+        w3Perma.boughtOrRefunded = (_) =>
+        {
+            theory.invalidatePrimaryEquation();
+            updateAvailability();
+        }
+        w3Perma.maxLevel = 1;
+    }
     /* Free penny
     For testing purposes
     */
     {
-        let warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+        warpFive = theory.createPermanentUpgrade(9001, normCurrency,
         new FreeCost);
-        warpFive.description = 'Get 5 penny for free';
-        warpFive.info = 'Yields 5 penny';
+        warpFive.description = 'Get 5 penny with consequences';
+        warpFive.info = 'Is it not clear that this is a testing tool?';
         warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
         (BigNumber.ONE + normCurrency.value);
     }
@@ -722,6 +754,7 @@ var updateAvailability = () =>
     w1.isAvailable = derivMs.level > 0;
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
+    w3.isAvailable = w3Perma.level > 0;
     blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
     w2Ms.level > 0;
 }
@@ -744,6 +777,7 @@ var tick = (elapsedTime, multiplier) =>
     theory.publicationMultiplier;
     let w1Term = derivMs.level ? getw1(w1.level) : BigNumber.ONE;
     let w2Term = w2Ms.level ? getw2(w2.level) : BigNumber.ONE;
+    let w3Term = w2Ms.level ? getw3(w3.level) : BigNumber.ONE;
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let bTerm = getb(b.level);
@@ -755,7 +789,7 @@ var tick = (elapsedTime, multiplier) =>
         let di = tmpZ[1] - z[1];
         derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * 10000);
         derivCurrency.value += derivTerm * BigNumber.TWO.pow(bTerm) * w1Term *
-        w2Term * bonus;
+        w2Term * w3Term * bonus;
     }
     rCoord = z[0];
     iCoord = z[1];
@@ -828,7 +862,8 @@ var getPrimaryEquation = () =>
         return rhoPart;
     }
     let omegaPart = `\\,\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
-    \\times 2^b\\times|\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
+    ${w3Perma.level ? 'w_3' : ''}\\times 2^b\\times
+    |\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
     theory.primaryEquationHeight = 72;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
