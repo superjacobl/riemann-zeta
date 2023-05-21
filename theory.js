@@ -137,14 +137,16 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.1, WIP',
+        versionName: 'v0.3.1',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
         condition: '\\text{{if }}{{{0}}}',
         blackhole: 'Unleash a black hole',
-        blackholeInfo: 'Decreases {0} as {1} gets closer to the origin'
+        blackholeInfo: 'Decreases {0} as {1} gets closer to the origin',
+        warpFive: 'Get 5 penny with consequences',
+        warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     }
 };
 
@@ -665,8 +667,9 @@ var init = () =>
     {
         warpFive = theory.createPermanentUpgrade(9001, normCurrency,
         new FreeCost);
-        warpFive.description = 'Get 5 penny with consequences';
-        warpFive.info = 'Is it not clear that this is a testing tool?';
+        warpFive.description = getLoc('warpFive');
+        warpFive.info = Localization.format(getLoc('warpFiveInfo'),
+        Utils.getMath('\\times'), Utils.getMath('\\rho'), Utils.getMath('1e5'));
         warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
         (BigNumber.ONE + normCurrency.value);
     }
@@ -695,9 +698,9 @@ var init = () =>
     // {
     //     speedMs = theory.createMilestoneUpgrade(2, speedMaxLevel);
     //     speedMs.description = Localization.getUpgradeIncCustomDesc(
-    //     getLoc('speed'), `\\times${getSpeed(1)}`);
+    //     getLoc('speed'), `${getSpeed(1)}`);
     //     speedMs.info = Localization.getUpgradeIncCustomInfo(getLoc('speed'),
-    //     `\\times${getSpeed(1)}`);
+    //     `${getSpeed(1)}`);
     //     speedMs.isAvailable = false;
     // }
     /* Unlock delta
@@ -853,18 +856,18 @@ var getEquationOverlay = () =>
 
 var getPrimaryEquation = () =>
 {
-    let rhoPart = `\\dot{\\rho}=\\frac{t\\times c_1
+    let rhoPart = `\\dot{\\rho}=\\frac{t{\\mkern 1mu}c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? `\\times w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-2}}`;
+    ${derivMs.level ? ` w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-2}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 66;
         return rhoPart;
     }
-    let omegaPart = `\\,\\dot{\\delta}=w_1${w2Ms.level ? 'w_2' : ''}
-    ${w3Perma.level ? 'w_3' : ''}\\times 2^b\\times
+    let omegaPart = `\\,\\dot{\\delta}=2^bw_1
+    ${w2Ms.level ? 'w_2' : ''}${w3Perma.level ? 'w_3' : ''}\\times
     |\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
-    theory.primaryEquationHeight = 72;
+    theory.primaryEquationHeight = 75;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
 

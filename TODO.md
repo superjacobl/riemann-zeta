@@ -1,5 +1,10 @@
 # To-do List
 
+- 0.3.1
+  - [ ] Move 225 milestone to 250
+  - [ ] Increase c2 init cost to 1500 to line up with 4x c1
+- [ ] Black hole reliance on activeness (gets weaker with offline progress)
+
 ## Balance
 
 - 0.2.6 (dev)
