@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost, FreeCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { ui } from '../api/ui/UI';
@@ -47,8 +47,9 @@ In this theory, we will be examining the zeta function on the line ` +
 var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
-'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation';
-var version = 0.31;
+'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
+'suggestions';
+var version = 0.32;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -132,12 +133,11 @@ const milestoneCost = new CustomCost((level) =>
     return BigNumber.from(-1);
 });
 
-
 const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.1',
+        versionName: 'v0.3.2',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
@@ -145,6 +145,12 @@ const locStrings =
         condition: '\\text{{if }}{{{0}}}',
         blackhole: 'Unleash a black hole',
         blackholeInfo: 'Decreases {0} as {1} gets closer to the origin',
+        rotationLock:
+        [
+            'Unlock graph',
+            'Lock graph'
+        ],
+        rotationLockInfo: 'Toggles the ability to rotate and zoom the 3D graph',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     }
@@ -554,8 +560,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var c1, c2, b, w1, w2, w3;
 var c1ExpMs, derivMs, w2Ms, blackholeMs;
-var w3Perma, warpFive;
-
+var w3Perma, rotationLock;
 
 var normCurrency, derivCurrency;
 
@@ -661,18 +666,33 @@ var init = () =>
         }
         w3Perma.maxLevel = 1;
     }
-    /* Free penny
-    For testing purposes
+    /* Rotation lock
+    Look sideways.
     */
     {
-        warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+        rotationLock = theory.createPermanentUpgrade(10, normCurrency,
         new FreeCost);
-        warpFive.description = getLoc('warpFive');
-        warpFive.info = Localization.format(getLoc('warpFiveInfo'),
-        Utils.getMath('\\times'), Utils.getMath('\\rho'), Utils.getMath('1e5'));
-        warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
-        (BigNumber.ONE + normCurrency.value);
+        rotationLock.getDescription = () => getLoc('rotationLock')[
+        rotationLock.level];
+        rotationLock.info = getLoc('rotationLockInfo');
+        rotationLock.boughtOrRefunded = (_) =>
+        {
+            rotationLock.level &= 1;
+        }
     }
+    /* Free penny
+    For testing purposes.
+    */
+    // {
+    //     warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+    //     new FreeCost);
+    //     warpFive.description = getLoc('warpFive');
+    //     warpFive.info = Localization.format(getLoc('warpFiveInfo'),
+    //     Utils.getMath('\\times'), Utils.getMath('\\rho'),
+    //     Utils.getMath('1e5'));
+    //     warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
+    //     (BigNumber.ONE + normCurrency.value);
+    // }
 
     theory.setMilestoneCost(milestoneCost);
     /* c1 exponent
@@ -809,7 +829,7 @@ var getEquationOverlay = () =>
 {
     let result = ui.createGrid
     ({
-        inputTransparent: true,
+        inputTransparent: () => rotationLock.level ? true : false,
         cascadeInputTransparent: false,
         children:
         [
