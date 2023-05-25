@@ -47,8 +47,9 @@ In this theory, we will be examining the zeta function on the line ` +
 var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
-'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation';
-var version = 0.31;
+'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
+'suggestions';
+var version = 0.32;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -132,12 +133,11 @@ const milestoneCost = new CustomCost((level) =>
     return BigNumber.from(-1);
 });
 
-
 const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.1',
+        versionName: 'v0.3.2',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
@@ -560,7 +560,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var c1, c2, b, w1, w2, w3;
 var c1ExpMs, derivMs, w2Ms, blackholeMs;
-var w3Perma, rotationLock, warpFive;
+var w3Perma, rotationLock;
 
 var normCurrency, derivCurrency;
 
@@ -677,21 +677,22 @@ var init = () =>
         rotationLock.info = getLoc('rotationLockInfo');
         rotationLock.boughtOrRefunded = (_) =>
         {
-            rotationLock.level %= 2;
+            rotationLock.level &= 1;
         }
     }
     /* Free penny
     For testing purposes.
     */
-    {
-        warpFive = theory.createPermanentUpgrade(9001, normCurrency,
-        new FreeCost);
-        warpFive.description = getLoc('warpFive');
-        warpFive.info = Localization.format(getLoc('warpFiveInfo'),
-        Utils.getMath('\\times'), Utils.getMath('\\rho'), Utils.getMath('1e5'));
-        warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
-        (BigNumber.ONE + normCurrency.value);
-    }
+    // {
+    //     warpFive = theory.createPermanentUpgrade(9001, normCurrency,
+    //     new FreeCost);
+    //     warpFive.description = getLoc('warpFive');
+    //     warpFive.info = Localization.format(getLoc('warpFiveInfo'),
+    //     Utils.getMath('\\times'), Utils.getMath('\\rho'),
+    //     Utils.getMath('1e5'));
+    //     warpFive.bought = (_) => normCurrency.value = BigNumber.from(1e5) *
+    //     (BigNumber.ONE + normCurrency.value);
+    // }
 
     theory.setMilestoneCost(milestoneCost);
     /* c1 exponent
