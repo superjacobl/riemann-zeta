@@ -137,7 +137,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.2',
+        versionName: 'v0.3.3, WIP',
         pubTime: 'Time: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
@@ -535,12 +535,12 @@ let riemannSiegelZeta = (t, n) =>
 let zeta = (t) =>
 {
     if(t > 1)
-        return riemannSiegelZeta(t, 4);
+        return riemannSiegelZeta(t, 0);
     if(t < 0.1)
         return zetaSmall(t);
     let offset = interpolate((t-0.1) * 10/9);
     let a = zetaSmall(t);
-    let b = riemannSiegelZeta(t, 4);
+    let b = riemannSiegelZeta(t, 0);
     return [
         a[0]*(1-offset) + b[0]*offset,
         a[1]*(1-offset) + b[1]*offset,

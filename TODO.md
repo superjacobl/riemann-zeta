@@ -4,6 +4,9 @@
   - [ ] Move 225 milestone to 250
   - [ ] Initial c2 cost from 1400 -> 1500
 - [ ] Black hole reliance on activeness (gets weaker with offline progress)
+  - Idea: black hole no longer lets the particle go through it, but instead will suck the particle to the nearest zero, freezing time
+  this will likely resolve tick length issues
+- [ ] Drop zeta computation layers from 4 to 3
 
 ## Balance
 
