@@ -55,6 +55,7 @@ let gameOffline = false;
 let pubTime = 0;
 let t = 0;
 let t_dot = 0;
+let terms = 0;
 let zTerm = BigNumber.from(1.4603545088095868);
 let derivTerm = BigNumber.ZERO;
 let rCoord = -1.4603545088095868;
@@ -139,6 +140,7 @@ const locStrings =
     {
         versionName: 'v0.3.3, WIP',
         pubTime: 'Time: {0}',
+        terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -151,6 +153,13 @@ const locStrings =
             'Lock graph'
         ],
         rotationLockInfo: 'Toggles the ability to rotate and zoom the 3D graph',
+        overlay:
+        [
+            'Display info',
+            'Hide info',
+        ],
+        overlayInfo: 'Toggles the display of Riemann-Siegel terms and ' +
+        'publication time',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     }
@@ -510,6 +519,7 @@ let riemannSiegelZeta = (t, n) =>
     let N = Math.floor(fullN);
     let p = fullN - N;
     let th = theta(t);
+    terms = N;
 
     for(let j = 1; j <= N; ++j)
     {
@@ -535,12 +545,12 @@ let riemannSiegelZeta = (t, n) =>
 let zeta = (t) =>
 {
     if(t > 1)
-        return riemannSiegelZeta(t, 0);
+        return riemannSiegelZeta(t, 1);
     if(t < 0.1)
         return zetaSmall(t);
     let offset = interpolate((t-0.1) * 10/9);
     let a = zetaSmall(t);
-    let b = riemannSiegelZeta(t, 0);
+    let b = riemannSiegelZeta(t, 1);
     return [
         a[0]*(1-offset) + b[0]*offset,
         a[1]*(1-offset) + b[1]*offset,
@@ -560,7 +570,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var c1, c2, b, w1, w2, w3;
 var c1ExpMs, derivMs, w2Ms, blackholeMs;
-var w3Perma, rotationLock;
+var w3Perma, rotationLock, overlayToggle;
 
 var normCurrency, derivCurrency;
 
@@ -667,7 +677,7 @@ var init = () =>
         w3Perma.maxLevel = 1;
     }
     /* Rotation lock
-    Look sideways.
+    Look sideway.
     */
     {
         rotationLock = theory.createPermanentUpgrade(10, normCurrency,
@@ -678,6 +688,20 @@ var init = () =>
         rotationLock.boughtOrRefunded = (_) =>
         {
             rotationLock.level &= 1;
+        }
+    }
+    /* Overlay toggle
+    Look forward.
+    */
+    {
+        overlayToggle = theory.createPermanentUpgrade(11, normCurrency,
+        new FreeCost);
+        overlayToggle.getDescription = () => getLoc('overlay')[
+        overlayToggle.level];
+        overlayToggle.info = getLoc('overlayInfo');
+        overlayToggle.boughtOrRefunded = (_) =>
+        {
+            overlayToggle.level &= 1;
         }
     }
     /* Free penny
@@ -842,6 +866,7 @@ var getEquationOverlay = () =>
             }),
             ui.createLatexLabel
             ({
+                isVisible: () => overlayToggle.level ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
@@ -866,6 +891,16 @@ var getEquationOverlay = () =>
                     return Localization.format(getLoc('pubTime'),
                     timeString);
                 },
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLatexLabel
+            ({
+                isVisible: () => overlayToggle.level ? true : false,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.START,
+                margin: new Thickness(6, 4),
+                text: () => Localization.format(getLoc('terms'), terms),
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             })
