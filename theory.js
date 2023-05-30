@@ -138,7 +138,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.3, WIP',
+        versionName: '(WIP)\\\\v0.3.3',
         pubTime: 'Time: {0}',
         terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
@@ -859,6 +859,7 @@ var getEquationOverlay = () =>
         [
             ui.createLatexLabel
             ({
+                verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 text: getLoc('versionName'),
                 fontSize: 9,
