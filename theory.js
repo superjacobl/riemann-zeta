@@ -49,12 +49,13 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
 'suggestions';
-var version = 0.32;
+var version = 0.33;
 
 let gameOffline = false;
 let pubTime = 0;
 let t = 0;
 let t_dot = 0;
+let terms = 0;
 let zTerm = BigNumber.from(1.4603545088095868);
 let derivTerm = BigNumber.ZERO;
 let rCoord = -1.4603545088095868;
@@ -137,8 +138,9 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.2',
+        versionName: 'v0.3.3',
         pubTime: 'Time: {0}',
+        terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
         zExp: '{{{0}}}\\text{{ exponent}}',
         half: '\\text{half}',
@@ -151,6 +153,13 @@ const locStrings =
             'Lock graph'
         ],
         rotationLockInfo: 'Toggles the ability to rotate and zoom the 3D graph',
+        overlay:
+        [
+            'Display info',
+            'Hide info',
+        ],
+        overlayInfo: 'Toggles the display of Riemann-Siegel terms and ' +
+        'publication time',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     }
@@ -510,6 +519,7 @@ let riemannSiegelZeta = (t, n) =>
     let N = Math.floor(fullN);
     let p = fullN - N;
     let th = theta(t);
+    terms = N;
 
     for(let j = 1; j <= N; ++j)
     {
@@ -532,20 +542,28 @@ let riemannSiegelZeta = (t, n) =>
     return [Z*Math.cos(th), -Z*Math.sin(th), Z];
 }
 
-let zeta = (t) =>
+let zeta = (T) =>
 {
-    if(t > 1)
-        return riemannSiegelZeta(t, 4);
-    if(t < 0.1)
-        return zetaSmall(t);
-    let offset = interpolate((t-0.1) * 10/9);
-    let a = zetaSmall(t);
-    let b = riemannSiegelZeta(t, 4);
-    return [
-        a[0]*(1-offset) + b[0]*offset,
-        a[1]*(1-offset) + b[1]*offset,
-        a[2]*(1-offset) + Math.abs(b[2])*offset
-    ];
+    let t = Math.abs(T);
+    let z;
+    if(t >= 1)
+        z = riemannSiegelZeta(t, 1);
+    else if(t < 0.1)
+        z = zetaSmall(t);
+    else
+    {
+        let offset = interpolate((t-0.1) * 10/9);
+        let a = zetaSmall(t);
+        let b = riemannSiegelZeta(t, 1);
+        z = [
+            a[0]*(1-offset) + b[0]*offset,
+            a[1]*(1-offset) + b[1]*offset,
+            a[2]*(1-offset) + Math.abs(b[2])*offset
+        ];
+    }
+    if(T < 0)
+        z[1] = -z[1];
+    return z;
 }
 
 /**
@@ -560,7 +578,7 @@ let getCoordString = (x) => x.toFixed(x >= -0.01 ?
 
 var c1, c2, b, w1, w2, w3;
 var c1ExpMs, derivMs, w2Ms, blackholeMs;
-var w3Perma, rotationLock;
+var w3Perma, rotationLock, overlayToggle;
 
 var normCurrency, derivCurrency;
 
@@ -667,7 +685,7 @@ var init = () =>
         w3Perma.maxLevel = 1;
     }
     /* Rotation lock
-    Look sideways.
+    Look sideway.
     */
     {
         rotationLock = theory.createPermanentUpgrade(10, normCurrency,
@@ -678,6 +696,20 @@ var init = () =>
         rotationLock.boughtOrRefunded = (_) =>
         {
             rotationLock.level &= 1;
+        }
+    }
+    /* Overlay toggle
+    Look forward.
+    */
+    {
+        overlayToggle = theory.createPermanentUpgrade(11, normCurrency,
+        new FreeCost);
+        overlayToggle.getDescription = () => getLoc('overlay')[
+        overlayToggle.level];
+        overlayToggle.info = getLoc('overlayInfo');
+        overlayToggle.boughtOrRefunded = (_) =>
+        {
+            overlayToggle.level &= 1;
         }
     }
     /* Free penny
@@ -835,6 +867,7 @@ var getEquationOverlay = () =>
         [
             ui.createLatexLabel
             ({
+                verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 text: getLoc('versionName'),
                 fontSize: 9,
@@ -842,6 +875,7 @@ var getEquationOverlay = () =>
             }),
             ui.createLatexLabel
             ({
+                isVisible: () => overlayToggle.level ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
@@ -866,6 +900,16 @@ var getEquationOverlay = () =>
                     return Localization.format(getLoc('pubTime'),
                     timeString);
                 },
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLatexLabel
+            ({
+                isVisible: () => overlayToggle.level ? true : false,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.START,
+                margin: new Thickness(6, 4),
+                text: () => Localization.format(getLoc('terms'), terms),
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             })
