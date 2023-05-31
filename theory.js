@@ -49,7 +49,7 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
 'suggestions';
-var version = 0.32;
+var version = 0.33;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -138,7 +138,7 @@ const locStrings =
 {
     en:
     {
-        versionName: '(WIP)\\\\v0.3.3',
+        versionName: 'v0.3.3',
         pubTime: 'Time: {0}',
         terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
@@ -542,20 +542,28 @@ let riemannSiegelZeta = (t, n) =>
     return [Z*Math.cos(th), -Z*Math.sin(th), Z];
 }
 
-let zeta = (t) =>
+let zeta = (T) =>
 {
-    if(t > 1)
-        return riemannSiegelZeta(t, 1);
-    if(t < 0.1)
-        return zetaSmall(t);
-    let offset = interpolate((t-0.1) * 10/9);
-    let a = zetaSmall(t);
-    let b = riemannSiegelZeta(t, 1);
-    return [
-        a[0]*(1-offset) + b[0]*offset,
-        a[1]*(1-offset) + b[1]*offset,
-        a[2]*(1-offset) + Math.abs(b[2])*offset
-    ];
+    let t = Math.abs(T);
+    let z;
+    if(t >= 1)
+        z = riemannSiegelZeta(t, 1);
+    else if(t < 0.1)
+        z = zetaSmall(t);
+    else
+    {
+        let offset = interpolate((t-0.1) * 10/9);
+        let a = zetaSmall(t);
+        let b = riemannSiegelZeta(t, 1);
+        z = [
+            a[0]*(1-offset) + b[0]*offset,
+            a[1]*(1-offset) + b[1]*offset,
+            a[2]*(1-offset) + Math.abs(b[2])*offset
+        ];
+    }
+    if(T < 0)
+        z[1] = -z[1];
+    return z;
 }
 
 /**
