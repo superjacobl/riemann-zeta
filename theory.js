@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost, FreeCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost, CustomCost, FreeCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { ui } from '../api/ui/UI';
@@ -13,16 +13,17 @@ import { Thickness } from '../api/ui/properties/Thickness';
 var id = 'riemann_zeta_f';
 var getName = (language) =>
 {
-    let names =
+    const names =
     {
         en: 'Riemann Zeta Function',
+        vi: 'Hàm zeta Riemann'
     };
 
     return names[language] || names.en;
 }
 var getDescription = (language) =>
 {
-    let descs =
+    const descs =
     {
         en:
 `The function now known as the Riemann zeta function was first defined by ` +
@@ -40,6 +41,22 @@ In this theory, we will be examining the zeta function on the line ` +
 `1859, it was hypothesised by Riemann himself that, other than the so-called ` +
 `'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
 `other root of the function lies on this critical line.`,
+        vi:
+`Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
+`dạng chuỗi vô hạn trên miền các số tự nhiên lớn hơn 1:
+zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+Định nghĩa hàm zeta được mở rộng tới các số thực bởi Chebyshev, và sau đó ` +
+`đến số phức bởi Riemann. Tuy nhiên, do chuỗi này phân kì đối với các giá ` +
+`trị s với phần thực nhỏ hơn 1, một "phiên bản" khác của hàm zeta được định ` +
+`nghĩa trên vùng này để hàm được liên thông trên toàn mặt phẳng số phức. Đây ` +
+`được gọi là thác triển giải tích, và thác triển giải tích của hàm zeta có ` +
+`mối liên hệ đến một meme nổi tiếng:
+1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+
+Trong lí thuyết này, chúng ta sẽ khám phá hàm zeta trên đường thẳng x = 0.5, ` +
+`gọi là đường tới hạn. Vào năm 1859, Riemann đã giả thuyết rằng, ngoài những ` +
+`"không điểm tầm thường" nằm trên các số âm chẵn -2, -4, -6, ..., tất cả các ` +
+`nghiệm của hàm đều nằm trên đường tới hạn này.`
     };
 
     return descs[language] || descs.en;
@@ -50,6 +67,8 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
 'suggestions';
 var version = 0.33;
+
+var versionName = 'v0.3.4';
 
 let gameOffline = false;
 let pubTime = 0;
@@ -138,7 +157,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.3',
+        wip: '(WIP)\\\\{0}',
         pubTime: 'Time: {0}',
         terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
@@ -162,6 +181,32 @@ const locStrings =
         'publication time',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
+    },
+    vi:
+    {
+        wip: '(Đang dở)\\\\{0}',
+        pubTime: 'Thời gian: {0}',
+        terms: 'Riemann-Siegel: {0} số hạng',
+        speed: '\\text{tốc độ}',
+        zExp: '{{{0}}}\\text{{ số mũ}}',
+        half: '\\text{một nửa}',
+        condition: '\\text{{khi }}{{{0}}}',
+        blackhole: 'Giải phóng hố đen',
+        blackholeInfo: 'Giảm {0} khi {1} tiến tới gốc toạ độ',
+        rotationLock:
+        [
+            'Mở khoá đồ thị',
+            'Khoá đồ thị'
+        ],
+        rotationLockInfo: 'Bật tắt khả năng quay và phóng to đồ thị 3D',
+        overlay:
+        [
+            'Hiển thị thông tin',
+            'Giấu thông tin',
+        ],
+        overlayInfo: 'Bật tắt số hạng hàm Riemann-Siegel và thời gian',
+        warpFive: 'Nhận 5 đồng nhưng có hậu quả',
+        warpFiveInfo: 'Công cụ thử nghiệm: {0}{1}\\ với {2}'
     }
 };
 
@@ -869,7 +914,8 @@ var getEquationOverlay = () =>
             ({
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
-                text: getLoc('versionName'),
+                // text: versionName,
+                text: Localization.format(getLoc('wip'), versionName),
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             }),
