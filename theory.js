@@ -31,13 +31,13 @@ var getDescription = (language) =>
         en:
 `The function now known as the Riemann zeta function was first defined by ` +
 `Euler for integers greater than 1 as an infinite series:
-zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
 The definition was later extended to real numbers by Chebyshev, and to the ` +
 `complex plane by Riemann. However, as it diverges on all s with a real ` +
 `component less than 1, a special version of the function was to be defined ` +
 `there in order to make the function continuous. This is known as an ` +
 `analytic continuation, and it is related to this infamous meme:
-1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 In this theory, we will be examining the zeta function on the line ` +
 `perpendicular to the x-axis at x = 0.5, known as the critical line. In ` +
@@ -60,22 +60,22 @@ In this theory, we will be examining the zeta function on the line ` +
 在這個理論中，我們將探索在 x = 0.5 處垂直於 x 軸的直線（稱為臨界線）上的 zeta 函數。 1859 年，黎曼自己假設，除了位於負偶數 -2、-4、-6、... 處的所謂“平凡零點”之外，函數的所有其他根都位於這條臨界線上。`,
         es:
 `Esta función conocida como Riemann Zeta fue definida por Euler para los integrales mayores a 1 como una serie de infinitos:
-zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
 Su definición fue extendida a los números reales gracias a Chebyshev, y luego al plano complejo gracias a Riemann. Sin embargo, a medida que diverge a todo s con un componente real menor a 1, una versión especial de la función fue definida para hacer la función continua. Esta se le conoce como la continuación analítica, y está relacionada a su infame meme:
-1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 En esta teoría, examinaremos la función de zeta en la línea perpendicular al axis-x cuando x = 0.5, conocido como la ruta crítica. En 1859, fue hipotetizado por el mismo Riemann que, excluyendo a los conocidos "ceros triviales" que permanecen con negativos integrales par -2, -4, -6, ... cada otra raíz de la función yace en esta ruta crítica.`,
         vi:
 `Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
 `dạng chuỗi vô hạn trên miền các số tự nhiên lớn hơn 1:
-zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
 Định nghĩa hàm zeta được mở rộng tới các số thực bởi Chebyshev, và sau đó ` +
 `đến số phức bởi Riemann. Tuy nhiên, do chuỗi này phân kì đối với các giá ` +
 `trị s với phần thực nhỏ hơn 1, một "phiên bản" khác của hàm zeta được định ` +
 `nghĩa trên vùng này để hàm được liên thông trên toàn mặt phẳng số phức. Đây ` +
 `được gọi là thác triển giải tích, và thác triển giải tích của hàm zeta có ` +
 `mối liên hệ đến một meme nổi tiếng:
-1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 Trong lí thuyết này, chúng ta sẽ khám phá hàm zeta trên đường thẳng x = 0.5, ` +
 `gọi là đường tới hạn. Vào năm 1859, Riemann đã giả thuyết rằng, ngoài những ` +
