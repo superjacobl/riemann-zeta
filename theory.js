@@ -89,8 +89,8 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
-'suggestions';
-var version = 0.33;
+'suggestions\n\nTranslations:\nChinese, by Omega_3301\nSpanish, by Jooo#0529';
+var version = 0.34;
 
 var versionName = 'v0.3.4';
 
