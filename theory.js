@@ -950,7 +950,7 @@ var getEquationOverlay = () =>
             ui.createLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                menuLang in unicodeLangs,
+                menuLang in unicodeLangs ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 // text: versionName,
@@ -961,7 +961,7 @@ var getEquationOverlay = () =>
             ui.createLatexLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                !(menuLang in unicodeLangs),
+                !(menuLang in unicodeLangs) ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 // text: versionName,
@@ -972,7 +972,7 @@ var getEquationOverlay = () =>
             ui.createLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                menuLang in unicodeLangs,
+                menuLang in unicodeLangs ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
@@ -1003,7 +1003,7 @@ var getEquationOverlay = () =>
             ui.createLatexLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                !(menuLang in unicodeLangs),
+                !(menuLang in unicodeLangs) ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
@@ -1034,7 +1034,7 @@ var getEquationOverlay = () =>
             ui.createLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                menuLang in unicodeLangs,
+                menuLang in unicodeLangs ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.START,
                 margin: new Thickness(6, 4),
@@ -1045,7 +1045,7 @@ var getEquationOverlay = () =>
             ui.createLatexLabel
             ({
                 isVisible: () => overlayToggle.level &&
-                !(menuLang in unicodeLangs),
+                !(menuLang in unicodeLangs) ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.START,
                 margin: new Thickness(6, 4),
