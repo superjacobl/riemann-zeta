@@ -18,6 +18,7 @@ var getName = (language) =>
         en: 'Riemann Zeta Function',
         'zh-Hans': '黎曼ζ函数',
         'zh-Hant': '黎曼ζ函数',
+        es: 'Función de Riemann Zeta',
         vi: 'Hàm zeta Riemann'
     };
 
@@ -57,6 +58,13 @@ In this theory, we will be examining the zeta function on the line ` +
 1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 在這個理論中，我們將探索在 x = 0.5 處垂直於 x 軸的直線（稱為臨界線）上的 zeta 函數。 1859 年，黎曼自己假設，除了位於負偶數 -2、-4、-6、... 處的所謂“平凡零點”之外，函數的所有其他根都位於這條臨界線上。`,
+        es:
+`Esta función conocida como Riemann Zeta fue definida por Euler para los integrales mayores a 1 como una serie de infinitos:
+zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+Su definición fue extendida a los números reales gracias a Chebyshev, y luego al plano complejo gracias a Riemann. Sin embargo, a medida que diverge a todo s con un componente real menor a 1, una versión especial de la función fue definida para hacer la función continua. Esta se le conoce como la continuación analítica, y está relacionada a su infame meme:
+1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+
+En esta teoría, examinaremos la función de zeta en la línea perpendicular al axis-x cuando x = 0.5, conocido como la ruta crítica. En 1859, fue hipotetizado por el mismo Riemann que, excluyendo a los conocidos "ceros triviales" que permanecen con negativos integrales par -2, -4, -6, ... cada otra raíz de la función yace en esta ruta crítica.`,
         vi:
 `Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
 `dạng chuỗi vô hạn trên miền các số tự nhiên lớn hơn 1:
@@ -237,6 +245,26 @@ const locStrings =
             '隱藏信息',
         ],
         overlayInfo: '切換 黎曼-西格爾項和出版時間的顯示',
+    },
+    es:
+    {
+        wip: '(TEP)\\\\{0}',
+        pubTime: 'Tiempo: {0}',
+        terms: 'Terminos de Riemann-Siegel: {0}',
+        blackhole: 'Desata un agujero negro',
+        blackholeInfo: 'Decrece {0} cuando {1} se acerca al origen',
+        rotationLock:
+        [
+            'Desbloquear gráfica',
+            'Bloquear gráfica'
+        ],
+        rotationLockInfo: 'Alterna la abilidad de rotar y acercar la gráfica 3D',
+        overlay:
+        [
+            'Mostrar info',
+            'Ocultar info',
+        ],
+        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los terminos y tiempo de publicación',
     },
     vi:
     {
