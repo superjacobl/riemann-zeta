@@ -51,7 +51,7 @@ In this theory, we will be examining the zeta function on the line ` +
 1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 在这个理论中，我们将探索在 x = 0.5 处垂直于 x 轴的直线（称为临界线）上的 zeta 函数` +
-`。 1859 年，黎曼自己假设，除了位于负偶数 -2、-4、-6、... 处的所谓“平凡零点”之外，` +
+`。1859 年，黎曼自己假设，除了位于负偶数 -2、-4、-6、... 处的所谓“平凡零点”之外，` +
 `函数的所有其他根都位于这条临界线上.`,
         vi:
 `Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
@@ -196,7 +196,7 @@ const locStrings =
     },
     'zh-Hans':
     {
-        wip: '(正在进行中)\\\\{0}',
+        wip: '(正在进行中)\n{0}',
         pubTime: '出版时间：{0}',
         terms: '黎曼-西格尔项：{0}',
         blackhole: '释放一个黑洞',
@@ -213,8 +213,6 @@ const locStrings =
             '隐藏信息',
         ],
         overlayInfo: '切换 黎曼-西格尔项和出版时间的显示',
-        warpFive: 'Get 5 penny with consequences',
-        warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     },
     vi:
     {
@@ -938,14 +936,32 @@ var tick = (elapsedTime, multiplier) =>
 
 var getEquationOverlay = () =>
 {
+    const unicodeLangs =
+    {
+        'zh-Hans': true,
+        'zh-Hant': true
+    };
     let result = ui.createGrid
     ({
         inputTransparent: () => rotationLock.level ? true : false,
         cascadeInputTransparent: false,
         children:
         [
+            ui.createLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                menuLang in unicodeLangs,
+                verticalOptions: LayoutOptions.END,
+                margin: new Thickness(6, 4),
+                // text: versionName,
+                text: Localization.format(getLoc('wip'), versionName),
+                fontSize: 11,
+                textColor: Color.TEXT_MEDIUM
+            }),
             ui.createLatexLabel
             ({
+                isVisible: () => overlayToggle.level &&
+                !(menuLang in unicodeLangs),
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 // text: versionName,
@@ -953,9 +969,41 @@ var getEquationOverlay = () =>
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             }),
+            ui.createLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                menuLang in unicodeLangs,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.END,
+                margin: new Thickness(6, 4),
+                text: () =>
+                {
+                    let minutes = Math.floor(pubTime / 60);
+                    let seconds = pubTime - minutes*60;
+                    let timeString;
+                    if(minutes >= 60)
+                    {
+                        let hours = Math.floor(minutes / 60);
+                        minutes -= hours*60;
+                        timeString = `${hours}:${
+                        minutes.toString().padStart(2, '0')}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    else
+                    {
+                        timeString = `${minutes.toString()}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    return Localization.format(getLoc('pubTime'),
+                    timeString);
+                },
+                fontSize: 11,
+                textColor: Color.TEXT_MEDIUM
+            }),
             ui.createLatexLabel
             ({
-                isVisible: () => overlayToggle.level ? true : false,
+                isVisible: () => overlayToggle.level &&
+                !(menuLang in unicodeLangs),
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
@@ -983,9 +1031,21 @@ var getEquationOverlay = () =>
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             }),
+            ui.createLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                menuLang in unicodeLangs,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.START,
+                margin: new Thickness(6, 4),
+                text: () => Localization.format(getLoc('terms'), terms),
+                fontSize: 11,
+                textColor: Color.TEXT_MEDIUM
+            }),
             ui.createLatexLabel
             ({
-                isVisible: () => overlayToggle.level ? true : false,
+                isVisible: () => overlayToggle.level &&
+                !(menuLang in unicodeLangs),
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.START,
                 margin: new Thickness(6, 4),
