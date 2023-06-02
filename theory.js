@@ -16,6 +16,7 @@ var getName = (language) =>
     const names =
     {
         en: 'Riemann Zeta Function',
+        'zh-Hans': '黎曼ζ函数',
         vi: 'Hàm zeta Riemann'
     };
 
@@ -41,6 +42,17 @@ In this theory, we will be examining the zeta function on the line ` +
 `1859, it was hypothesised by Riemann himself that, other than the so-called ` +
 `'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
 `other root of the function lies on this critical line.`,
+        'zh-Hans':
+`黎曼ζ函数首次由欧拉定义的,将大于 1 的整数定义为无限系列：
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+这个定义后来被切比雪夫扩展到实数，又被黎曼扩展到複數(a+bi)。然而，由于它在实数小于 ` +
+`1 的所有 s 上等于∞，因此要在此处改变函数的定义以使函数完全连续。这被称为解析开拓.` +
+`这也造成了一个臭名的笑话:
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
+
+在这个理论中，我们将探索在 x = 0.5 处垂直于 x 轴的直线（称为临界线）上的 zeta 函数` +
+`。 1859 年，黎曼自己假设，除了位于负偶数 -2、-4、-6、... 处的所谓“平凡零点”之外，` +
+`函数的所有其他根都位于这条临界线上.`,
         vi:
 `Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
 `dạng chuỗi vô hạn trên miền các số tự nhiên lớn hơn 1:
@@ -179,6 +191,28 @@ const locStrings =
         ],
         overlayInfo: 'Toggles the display of Riemann-Siegel terms and ' +
         'publication time',
+        warpFive: 'Get 5 penny with consequences',
+        warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
+    },
+    'zh-Hans':
+    {
+        wip: '(正在进行中)\\\\{0}',
+        pubTime: '出版时间：{0}',
+        terms: '黎曼-西格尔项：{0}',
+        blackhole: '释放一个黑洞',
+        blackholeInfo: '随着 {1} 越来越接近原点 (0,0)，减少 {0}',
+        rotationLock:
+        [
+            '解锁图形',
+            '锁图形'
+        ],
+        rotationLockInfo: '切换旋转和缩放 3D 图形的能力',
+        overlay:
+        [
+            '显示信息',
+            '隐藏信息',
+        ],
+        overlayInfo: '切换 黎曼-西格尔项和出版时间的显示',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
     },
