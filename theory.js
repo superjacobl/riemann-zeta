@@ -130,7 +130,7 @@ const getc1Exp = (level) => c1ExpTable[level];
 const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.699));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 0.699 * 4);
+const c2Cost = new ExponentialCost(1500, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 3;
@@ -171,9 +171,9 @@ const milestoneCost = new CustomCost((level) =>
     if(level == 0) return BigNumber.from(25 * tauRate);
     if(level == 1) return BigNumber.from(50 * tauRate);
     if(level == 2) return BigNumber.from(125 * tauRate);
-    if(level == 3) return BigNumber.from(225 * tauRate);
-    if(level == 4) return BigNumber.from(350 * tauRate);
-    if(level == 5) return BigNumber.from(500 * tauRate);
+    if(level == 3) return BigNumber.from(250 * tauRate);
+    if(level == 4) return BigNumber.from(400 * tauRate);
+    if(level == 5) return BigNumber.from(600 * tauRate);
     return BigNumber.from(-1);
 });
 
@@ -1001,8 +1001,7 @@ var getEquationOverlay = () =>
         [
             ui.createLabel
             ({
-                isVisible: () => overlayToggle.level &&
-                menuLang in unicodeLangs ? true : false,
+                isVisible: () => menuLang in unicodeLangs ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 // text: versionName,
@@ -1012,8 +1011,7 @@ var getEquationOverlay = () =>
             }),
             ui.createLatexLabel
             ({
-                isVisible: () => overlayToggle.level &&
-                !(menuLang in unicodeLangs) ? true : false,
+                isVisible: () => !(menuLang in unicodeLangs) ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
                 // text: versionName,
