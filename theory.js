@@ -127,7 +127,7 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.699));
+const c1Cost = new FirstFreeCost(new ExponentialCost(225, 0.699));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
 const c2Cost = new ExponentialCost(1500, 0.699 * 4);
@@ -153,7 +153,7 @@ const getw3 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
-    BigNumber.from(1e8),
+    BigNumber.from(1e9),
     BigNumber.from(1e14),
     BigNumber.from(1e21),
     BigNumber.from('1e1000')
@@ -264,7 +264,7 @@ const locStrings =
             'Mostrar info',
             'Ocultar info',
         ],
-        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los terminos y tiempo de publicación',
+        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los términos y tiempo de publicación',
     },
     vi:
     {
@@ -1025,6 +1025,7 @@ var getEquationOverlay = () =>
                 menuLang in unicodeLangs ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
+                verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: () =>
                 {
@@ -1056,6 +1057,7 @@ var getEquationOverlay = () =>
                 !(menuLang in unicodeLangs) ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
+                verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: () =>
                 {
