@@ -92,7 +92,8 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'suggestions\n\nTranslations:\nChinese, by Omega_3301\nSpanish, by Jooo#0529';
 var version = 0.34;
 
-var versionName = 'v0.3.4';
+const versionName = 'v0.3.4';
+const workInProgress = false;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -1004,8 +1005,8 @@ var getEquationOverlay = () =>
                 isVisible: () => menuLang in unicodeLangs ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
-                text: versionName,
-                // text: Localization.format(getLoc('wip'), versionName),
+                text: workInProgress ? Localization.format(getLoc('wip'),
+                versionName) : versionName,
                 fontSize: 11,
                 textColor: Color.TEXT_MEDIUM
             }),
@@ -1014,8 +1015,8 @@ var getEquationOverlay = () =>
                 isVisible: () => !(menuLang in unicodeLangs) ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
-                // text: versionName,
-                text: Localization.format(getLoc('wip'), versionName),
+                text: workInProgress ? Localization.format(getLoc('wip'),
+                versionName) : versionName,
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             }),
