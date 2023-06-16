@@ -1004,8 +1004,8 @@ var getEquationOverlay = () =>
                 isVisible: () => menuLang in unicodeLangs ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
-                // text: versionName,
-                text: Localization.format(getLoc('wip'), versionName),
+                text: versionName,
+                // text: Localization.format(getLoc('wip'), versionName),
                 fontSize: 11,
                 textColor: Color.TEXT_MEDIUM
             }),
