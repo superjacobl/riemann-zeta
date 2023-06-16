@@ -1,12 +1,13 @@
 # To-do List
 
 - 0.3.1
-  - [ ] Move 225 milestone to 250
-  - [ ] Initial c2 cost from 1400 -> 1500
+  - [x] Move 225 milestone to 250
+  - [x] Initial c2 cost from 1400 -> 1500
+  - [ ] Nerf min black hole speed from 0.04 -> 0.06? Doesn't feel good if slow
 - [ ] Black hole reliance on activeness (gets weaker with offline progress)
   - Idea: black hole no longer lets the particle go through it, but instead will suck the particle to the nearest zero, freezing time
   this will likely resolve tick length issues
-- [ ] Drop zeta computation layers from 4 to 3
+- [x] Drop zeta computation layers from 4 to 1
 
 ## Balance
 

@@ -1,5 +1,5 @@
 import { BigNumber } from '../api/BigNumber';
-import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost,CustomCost, FreeCost } from '../api/Costs';
+import { ConstantCost, ExponentialCost, FirstFreeCost, LinearCost, StepwiseCost, CustomCost, FreeCost } from '../api/Costs';
 import { Localization } from '../api/Localization';
 import { QuaternaryEntry, theory } from '../api/Theory';
 import { ui } from '../api/ui/UI';
@@ -13,33 +13,74 @@ import { Thickness } from '../api/ui/properties/Thickness';
 var id = 'riemann_zeta_f';
 var getName = (language) =>
 {
-    let names =
+    const names =
     {
         en: 'Riemann Zeta Function',
+        'zh-Hans': '黎曼ζ函数',
+        'zh-Hant': '黎曼ζ函数',
+        es: 'Función de Riemann Zeta',
+        vi: 'Hàm zeta Riemann'
     };
 
     return names[language] || names.en;
 }
 var getDescription = (language) =>
 {
-    let descs =
+    const descs =
     {
         en:
 `The function now known as the Riemann zeta function was first defined by ` +
 `Euler for integers greater than 1 as an infinite series:
-zeta(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
 The definition was later extended to real numbers by Chebyshev, and to the ` +
 `complex plane by Riemann. However, as it diverges on all s with a real ` +
 `component less than 1, a special version of the function was to be defined ` +
 `there in order to make the function continuous. This is known as an ` +
 `analytic continuation, and it is related to this infamous meme:
-1 + 2 + 3 + 4 + ... = -1/12 = zeta(-1)
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
 
 In this theory, we will be examining the zeta function on the line ` +
 `perpendicular to the x-axis at x = 0.5, known as the critical line. In ` +
 `1859, it was hypothesised by Riemann himself that, other than the so-called ` +
 `'trivial zeroes' lying at negative even integers -2, -4, -6, ..., every ` +
 `other root of the function lies on this critical line.`,
+        'zh-Hans':
+`黎曼ζ函数首次由欧拉定义的，将大于 1 的整数定义为无限系列。
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+这个定义后来被切比雪夫扩展到实数，又被黎曼扩展到複數(a+bi)。然而，由于它在实数小于 1 的所有 s 上等于∞，因此要在此处改变函数的定义以使函数完全连续。这被称为解析开拓.这也造成了一个臭名的笑话:
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
+
+在这个理论中，我们将探索在 x = 0.5 处垂直于 x 轴的直线（称为临界线）上的 zeta 函数。 1859 年，黎曼自己假设，除了位于负偶数 -2、-4、-6、... 处的所谓“平凡零点”之外，函数的所有其他根都位于这条临界线上。`,
+        'zh-Hant':
+`黎曼ζ函數首次由歐拉定義的，將大於 1 的整數定義為無限系列：
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+這個定義後來被切比雪夫擴展到實數，又被黎曼擴展到複數(a+bi)。然而，由於它在實數小於 1 的所有 s 上等於∞，因此要在此處改變函數的定義以使函數完全連續。這被稱為解析開拓。這也造成了一個臭名的笑話:
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
+
+在這個理論中，我們將探索在 x = 0.5 處垂直於 x 軸的直線（稱為臨界線）上的 zeta 函數。 1859 年，黎曼自己假設，除了位於負偶數 -2、-4、-6、... 處的所謂“平凡零點”之外，函數的所有其他根都位於這條臨界線上。`,
+        es:
+`Esta función conocida como Riemann Zeta fue definida por Euler para los integrales mayores a 1 como una serie de infinitos:
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+Su definición fue extendida a los números reales gracias a Chebyshev, y luego al plano complejo gracias a Riemann. Sin embargo, a medida que diverge a todo s con un componente real menor a 1, una versión especial de la función fue definida para hacer la función continua. Esta se le conoce como la continuación analítica, y está relacionada a su infame meme:
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
+
+En esta teoría, examinaremos la función de zeta en la línea perpendicular al axis-x cuando x = 0.5, conocido como la ruta crítica. En 1859, fue hipotetizado por el mismo Riemann que, excluyendo a los conocidos "ceros triviales" que permanecen con negativos integrales par -2, -4, -6, ... cada otra raíz de la función yace en esta ruta crítica.`,
+        vi:
+`Trước khi được mang tên Riemann, hàm zeta được định nghĩa bởi Euler dưới ` +
+`dạng chuỗi vô hạn trên miền các số tự nhiên lớn hơn 1:
+ζ(s) = 1 + 1/(2^s) + 1/(3^s) + ...
+Định nghĩa hàm zeta được mở rộng tới các số thực bởi Chebyshev, và sau đó ` +
+`đến số phức bởi Riemann. Tuy nhiên, do chuỗi này phân kì đối với các giá ` +
+`trị s với phần thực nhỏ hơn 1, một "phiên bản" khác của hàm zeta được định ` +
+`nghĩa trên vùng này để hàm được liên thông trên toàn mặt phẳng số phức. Đây ` +
+`được gọi là thác triển giải tích, và thác triển giải tích của hàm zeta có ` +
+`mối liên hệ đến một meme nổi tiếng:
+1 + 2 + 3 + 4 + ... = -1/12 = ζ(-1)
+
+Trong lí thuyết này, chúng ta sẽ khám phá hàm zeta trên đường thẳng x = 0.5, ` +
+`gọi là đường tới hạn. Vào năm 1859, Riemann đã giả thuyết rằng, ngoài những ` +
+`"không điểm tầm thường" nằm trên các số âm chẵn -2, -4, -6, ..., tất cả các ` +
+`nghiệm của hàm đều nằm trên đường tới hạn này.`
     };
 
     return descs[language] || descs.en;
@@ -48,8 +89,11 @@ var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
 'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
 'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
 'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
-'suggestions';
-var version = 0.33;
+'suggestions\n\nTranslations:\nChinese, by Omega_3301\nSpanish, by Jooo#0529';
+var version = 0.34;
+
+const versionName = 'v0.3.4';
+const workInProgress = false;
 
 let gameOffline = false;
 let pubTime = 0;
@@ -84,10 +128,10 @@ const c1ExpTable =
     BigNumber.from(1.25)
 ];
 const getc1Exp = (level) => c1ExpTable[level];
-const c1Cost = new FirstFreeCost(new ExponentialCost(220, 0.699));
+const c1Cost = new FirstFreeCost(new ExponentialCost(225, 0.699));
 const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 
-const c2Cost = new ExponentialCost(1400, 0.699 * 4);
+const c2Cost = new ExponentialCost(1500, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 3;
@@ -110,7 +154,7 @@ const getw3 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
 [
-    BigNumber.from(1e8),
+    BigNumber.from(1e9),
     BigNumber.from(1e14),
     BigNumber.from(1e21),
     BigNumber.from('1e1000')
@@ -128,9 +172,9 @@ const milestoneCost = new CustomCost((level) =>
     if(level == 0) return BigNumber.from(25 * tauRate);
     if(level == 1) return BigNumber.from(50 * tauRate);
     if(level == 2) return BigNumber.from(125 * tauRate);
-    if(level == 3) return BigNumber.from(225 * tauRate);
-    if(level == 4) return BigNumber.from(350 * tauRate);
-    if(level == 5) return BigNumber.from(500 * tauRate);
+    if(level == 3) return BigNumber.from(250 * tauRate);
+    if(level == 4) return BigNumber.from(400 * tauRate);
+    if(level == 5) return BigNumber.from(600 * tauRate);
     return BigNumber.from(-1);
 });
 
@@ -138,7 +182,7 @@ const locStrings =
 {
     en:
     {
-        versionName: 'v0.3.3',
+        wip: '(WIP)\\\\{0}',
         pubTime: 'Time: {0}',
         terms: 'Riemann-Siegel terms: {0}',
         speed: '\\text{speed}',
@@ -162,6 +206,92 @@ const locStrings =
         'publication time',
         warpFive: 'Get 5 penny with consequences',
         warpFiveInfo: 'Testing tool: {0}{1}\\ by {2}'
+    },
+    'zh-Hans':
+    {
+        wip: '(正在进行中)\n{0}',
+        pubTime: '出版时间：{0}',
+        terms: '黎曼-西格尔项：{0}',
+        blackhole: '释放一个黑洞',
+        blackholeInfo: '随着 {1} 越来越接近原点 (0,0)，减少 {0}',
+        rotationLock:
+        [
+            '解锁图形',
+            '锁定图形'
+        ],
+        rotationLockInfo: '切换旋转和缩放 3D 图形的能力',
+        overlay:
+        [
+            '显示信息',
+            '隐藏信息',
+        ],
+        overlayInfo: '切换 黎曼-西格尔项和出版时间的显示',
+    },
+    'zh-Hant':
+    {
+        wip: '(正在進行中)\n{0}',
+        pubTime: '出版時間：{0}',
+        terms: '黎曼-西格爾項：{0}',
+        blackhole: '釋放一個黑洞',
+        blackholeInfo: '隨著 {1} 越來越接近原點 (0,0)，減少 {0}',
+        rotationLock:
+        [
+            '解鎖圖形',
+            '鎖定圖形'
+        ],
+        rotationLockInfo: '切換旋轉和縮放 3D 圖形的能力',
+        overlay:
+        [
+            '顯示信息',
+            '隱藏信息',
+        ],
+        overlayInfo: '切換 黎曼-西格爾項和出版時間的顯示',
+    },
+    es:
+    {
+        wip: '(TEP)\\\\{0}',
+        pubTime: 'Tiempo: {0}',
+        terms: 'Terminos de Riemann-Siegel: {0}',
+        blackhole: 'Desata un agujero negro',
+        blackholeInfo: 'Decrece {0} cuando {1} se acerca al origen',
+        rotationLock:
+        [
+            'Desbloquear gráfica',
+            'Bloquear gráfica'
+        ],
+        rotationLockInfo: 'Alterna la abilidad de rotar y acercar la gráfica 3D',
+        overlay:
+        [
+            'Mostrar info',
+            'Ocultar info',
+        ],
+        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los términos y tiempo de publicación',
+    },
+    vi:
+    {
+        wip: '(Đang dở)\\\\{0}',
+        pubTime: 'Thời gian: {0}',
+        terms: 'Riemann-Siegel: {0} số hạng',
+        speed: '\\text{tốc độ}',
+        zExp: '{{{0}}}\\text{{ số mũ}}',
+        half: '\\text{một nửa}',
+        condition: '\\text{{khi }}{{{0}}}',
+        blackhole: 'Giải phóng hố đen',
+        blackholeInfo: 'Giảm {0} khi {1} tiến tới gốc toạ độ',
+        rotationLock:
+        [
+            'Mở khoá đồ thị',
+            'Khoá đồ thị'
+        ],
+        rotationLockInfo: 'Bật tắt khả năng quay và phóng to đồ thị 3D',
+        overlay:
+        [
+            'Hiển thị thông tin',
+            'Giấu thông tin',
+        ],
+        overlayInfo: 'Bật tắt số hạng hàm Riemann-Siegel và thời gian',
+        warpFive: 'Nhận 5 đồng nhưng có hậu quả',
+        warpFiveInfo: 'Công cụ thử nghiệm: {0}{1}\\ với {2}'
     }
 };
 
@@ -859,25 +989,76 @@ var tick = (elapsedTime, multiplier) =>
 
 var getEquationOverlay = () =>
 {
+    const unicodeLangs =
+    {
+        'zh-Hans': true,
+        'zh-Hant': true
+    };
     let result = ui.createGrid
     ({
         inputTransparent: () => rotationLock.level ? true : false,
         cascadeInputTransparent: false,
         children:
         [
-            ui.createLatexLabel
+            ui.createLabel
             ({
+                isVisible: () => menuLang in unicodeLangs ? true : false,
                 verticalOptions: LayoutOptions.END,
                 margin: new Thickness(6, 4),
-                text: getLoc('versionName'),
-                fontSize: 9,
+                text: workInProgress ? Localization.format(getLoc('wip'),
+                versionName) : versionName,
+                fontSize: 11,
                 textColor: Color.TEXT_MEDIUM
             }),
             ui.createLatexLabel
             ({
-                isVisible: () => overlayToggle.level ? true : false,
+                isVisible: () => !(menuLang in unicodeLangs) ? true : false,
+                verticalOptions: LayoutOptions.END,
+                margin: new Thickness(6, 4),
+                text: workInProgress ? Localization.format(getLoc('wip'),
+                versionName) : versionName,
+                fontSize: 9,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                menuLang in unicodeLangs ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.END,
+                verticalTextAlignment: TextAlignment.START,
+                margin: new Thickness(6, 4),
+                text: () =>
+                {
+                    let minutes = Math.floor(pubTime / 60);
+                    let seconds = pubTime - minutes*60;
+                    let timeString;
+                    if(minutes >= 60)
+                    {
+                        let hours = Math.floor(minutes / 60);
+                        minutes -= hours*60;
+                        timeString = `${hours}:${
+                        minutes.toString().padStart(2, '0')}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    else
+                    {
+                        timeString = `${minutes.toString()}:${
+                        seconds.toFixed(1).padStart(4, '0')}`;
+                    }
+                    return Localization.format(getLoc('pubTime'),
+                    timeString);
+                },
+                fontSize: 11,
+                textColor: Color.TEXT_MEDIUM
+            }),
+            ui.createLatexLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                !(menuLang in unicodeLangs) ? true : false,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.END,
+                verticalTextAlignment: TextAlignment.START,
                 margin: new Thickness(6, 4),
                 text: () =>
                 {
@@ -903,9 +1084,21 @@ var getEquationOverlay = () =>
                 fontSize: 9,
                 textColor: Color.TEXT_MEDIUM
             }),
+            ui.createLabel
+            ({
+                isVisible: () => overlayToggle.level &&
+                menuLang in unicodeLangs ? true : false,
+                horizontalOptions: LayoutOptions.END,
+                verticalOptions: LayoutOptions.START,
+                margin: new Thickness(6, 4),
+                text: () => Localization.format(getLoc('terms'), terms),
+                fontSize: 11,
+                textColor: Color.TEXT_MEDIUM
+            }),
             ui.createLatexLabel
             ({
-                isVisible: () => overlayToggle.level ? true : false,
+                isVisible: () => overlayToggle.level &&
+                !(menuLang in unicodeLangs) ? true : false,
                 horizontalOptions: LayoutOptions.END,
                 verticalOptions: LayoutOptions.START,
                 margin: new Thickness(6, 4),
