@@ -85,11 +85,11 @@ Trong lí thuyết này, chúng ta sẽ khám phá hàm zeta trên đường th�
 
     return descs[language] || descs.en;
 }
-var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
-'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
-'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
-'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
-'suggestions\n\nTranslations:\nChinese, by Omega_3301\nSpanish, by Jooo#0529';
+var authors = 'propfeds, Eylanding\nMartin_mc, previous maintainer\n\n' +
+'Thanks to:\nGlen Pugh, for the Riemann-Siegel formula implementation\nXLII, ' +
+'for teaching the ancient Sim language\nSneaky, Gen & Gaunter, for maths ' +
+'consultation & other suggestions\n\nTranslations:\nOmega_3301 - 简体中文、' +
+'繁體中文\nJooo#0529 - Español\npropfeds - Tiếng Việt';
 var version = 0.34;
 
 const versionName = 'v0.3.4';
