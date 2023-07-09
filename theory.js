@@ -934,11 +934,15 @@ var init = () =>
         {
             searchingRewind = true;
             foundZero = false;
+            bhzTerm = null;
+            bhdTerm = null;
         }
         blackholeMs.refunded = (_) =>
         {
             searchingRewind = false;
             foundZero = false;
+            bhzTerm = null;
+            bhdTerm = null;
         }
         blackholeMs.isAvailable = false;
     }
@@ -1031,10 +1035,10 @@ var tick = (elapsedTime, multiplier) =>
             bhdTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
             bhzTerm = BigNumber.from(zResult[2]).abs();
         }
-        derivCurrency.value += derivTerm * BigNumber.TWO.pow(bTerm) *
+        derivCurrency.value += bhdTerm * BigNumber.TWO.pow(bTerm) *
         w1Term * w2Term * w3Term * bonus;
         normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-        (zTerm/bTerm + bMarginTerm);
+        (bhzTerm/bTerm + bMarginTerm);
     }
 
     theory.invalidateTertiaryEquation();
