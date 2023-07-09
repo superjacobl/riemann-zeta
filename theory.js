@@ -1199,7 +1199,7 @@ var getSecondaryEquation = () =>
 
 var getTertiaryEquation = () =>
 {
-    return `|\\zeta(\\frac{1}{2}+it)|=${zTerm.toString(3)}`;
+    return `|\\zeta(\\frac{1}{2}+it)|=${(bhzTerm ?? zTerm).toString(3)}`;
 }
 
 var getQuaternaryEntries = () =>
@@ -1207,7 +1207,7 @@ var getQuaternaryEntries = () =>
     quaternaryEntries[0].value = t_dot.toFixed(2);
     quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
-        quaternaryEntries[2].value = derivTerm.toString(3);
+        quaternaryEntries[2].value = (bhdTerm ?? derivTerm).toString(3);
     else
         quaternaryEntries[2].value = null;
     return quaternaryEntries;
