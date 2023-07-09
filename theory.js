@@ -99,9 +99,9 @@ let terms = 0;
 let pubTime = 0;
 let t = 0;
 let t_dot = 0;
-let derivTerm = BigNumber.ZERO;
 let zResult = [-1.4603545088095868, 0, 1.4603545088095868];
 let zTerm = BigNumber.from(zResult[2]);
+let dTerm = BigNumber.ZERO;
 let searchingRewind = false;
 let foundZero = false;
 let bhdt;
@@ -997,10 +997,10 @@ var tick = (elapsedTime, multiplier) =>
             let tmpZ = zeta(t + 1 / derivRes);
             let dr = tmpZ[0] - zResult[0];
             let di = tmpZ[1] - zResult[1];
-            derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
-            derivCurrency.value += derivTerm * BigNumber.TWO.pow(bTerm) *
+            dTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
+            derivCurrency.value += dTerm * BigNumber.TWO.pow(bTerm) *
             w1Term * w2Term * w3Term * bonus;
-            if(blackholeMs.level && t >= 14 && !derivTerm.isZero)
+            if(blackholeMs.level && t >= 14 && !dTerm.isZero)
             {
                 let d = (tmpZ[2] - zResult[2]) * derivRes;
                 bhdt = zResult[2] / d;
@@ -1207,7 +1207,7 @@ var getQuaternaryEntries = () =>
     quaternaryEntries[0].value = t_dot.toFixed(2);
     quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
-        quaternaryEntries[2].value = (bhdTerm ?? derivTerm).toString(3);
+        quaternaryEntries[2].value = (bhdTerm ?? dTerm).toString(3);
     else
         quaternaryEntries[2].value = null;
     return quaternaryEntries;
@@ -1226,9 +1226,9 @@ var postPublish = () =>
     pubTime = 0;
     t = 0;
     t_dot = 0;
-    derivTerm = BigNumber.ZERO;
     zResult = [-1.4603545088095868, 0, 1.4603545088095868];
     zTerm = BigNumber.from(zResult[2]);
+    dTerm = BigNumber.ZERO;
     searchingRewind = false;
     foundZero = false;
 
