@@ -6,6 +6,8 @@
   - [ ] Finding the nearest zero of Z(t) to a given value t_0 is not an easy question, but my first thought is to use Newton's method to find a zero t_1, then scan the interval [t_0,t_1] for other zeros.
   - [ ] Improving computational efficiency of the Riemann Siegel algorithm has been studied [for example, see https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=4e9ff7dd91cf62892bab9156d30cf5014c4b48ce], but I don't know of any easy to implement formulas. Theorem 1 in the paper cited gives the new formula, but it seems rather complicated.
 
+- [ ] BH saves last zero passed through for easier sucking
+
 - [ ] Nerf min black hole speed from 0.04 -> 0.06? Doesn't feel good if slow
 - [ ] Black hole reliance on activeness (gets weaker with offline progress)
   - Idea: black hole no longer lets the particle go through it, but instead will suck the particle to the nearest zero, freezing time

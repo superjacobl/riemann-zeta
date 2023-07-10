@@ -102,6 +102,7 @@ let t_dot = 0;
 let zResult = [-1.4603545088095868, 0, 1.4603545088095868];
 let zTerm = BigNumber.from(zResult[2]);
 let dTerm = BigNumber.ZERO;
+let lastZero = 0;
 let searchingRewind = false;
 let foundZero = false;
 let bhdt;
@@ -936,9 +937,13 @@ var init = () =>
             foundZero = false;
             bhzTerm = null;
             bhdTerm = null;
+            if(lastZero)
+                t = lastZero;
         }
         blackholeMs.refunded = (_) =>
         {
+            if(foundZero)
+                lastZero = t;
             searchingRewind = false;
             foundZero = false;
             bhzTerm = null;
@@ -991,7 +996,10 @@ var tick = (elapsedTime, multiplier) =>
 
     if(!blackholeMs.level || !foundZero)
     {
+        let prevZ = zResult[2];
         zResult = zeta(t);
+        if(zResult[2] * prevZ <= 0 && !game.isCalculatingOfflineProgress)
+            lastZero = t;
         if(derivMs.level)
         {
             let tmpZ = zeta(t + 1 / derivRes);
@@ -1012,6 +1020,7 @@ var tick = (elapsedTime, multiplier) =>
                 }
                 else
                 {
+                    t_dot = bhdt / elapsedTime;
                     t -= bhdt;
                     searchingRewind = false;
                     if(Math.abs(bhdt) < 1e-8)
@@ -1229,6 +1238,7 @@ var postPublish = () =>
     zResult = [-1.4603545088095868, 0, 1.4603545088095868];
     zTerm = BigNumber.from(zResult[2]);
     dTerm = BigNumber.ZERO;
+    lastZero = 0;
     searchingRewind = false;
     foundZero = false;
 
