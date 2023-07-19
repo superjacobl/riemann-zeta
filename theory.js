@@ -141,11 +141,11 @@ const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 6;
 const bCost = new CompositeCost(1, new ConstantCost(1e15),
-new CompositeCost(1, new ConstantCost('1e45'),
-new CompositeCost(1, new ConstantCost('1e360'),
-new CompositeCost(1, new ConstantCost('1e810'),
-new CompositeCost(1, new ConstantCost('1e1050'),
-new ConstantCost('1e1200'))))));
+new CompositeCost(1, new ConstantCost(BigNumber.from(1e45)),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e360')),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e810')),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e1050')),
+new ConstantCost(BigNumber.from('1e1200')))))));
 const getb = (level) => level / 2;
 const bMarginTerm = BigNumber.from(1/100);
 
