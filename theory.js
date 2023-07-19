@@ -141,7 +141,7 @@ const getc2 = (level) => BigNumber.TWO.pow(level);
 
 const bMaxLevel = 6;
 const bCost = new CompositeCost(1, new ConstantCost(1e15),
-new CompositeCost(1, new ConstantCost(1e45),
+new CompositeCost(1, new ConstantCost('1e45'),
 new CompositeCost(1, new ConstantCost('1e360'),
 new CompositeCost(1, new ConstantCost('1e810'),
 new CompositeCost(1, new ConstantCost('1e1050'),
