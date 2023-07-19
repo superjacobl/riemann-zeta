@@ -105,7 +105,6 @@ let dTerm = BigNumber.ZERO;
 let lastZero = 0;
 let searchingRewind = false;
 let foundZero = false;
-let bhdt;
 let bhzTerm = null;
 let bhdTerm = null;
 let quaternaryEntries =
@@ -140,14 +139,17 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1500, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 3;
-const bCost = new CompositeCost(1, new ConstantCost(1e21),
-new ExponentialCost(BigNumber.from('1e600'), BigNumber.from('1e300').log2()));
-const getb = (level) => BigNumber.TWO.pow(level);
-const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
+const bMaxLevel = 6;
+const bCost = new CompositeCost(1, new ConstantCost(1e15),
+new CompositeCost(1, new ConstantCost(1e45),
+new CompositeCost(1, new ConstantCost('1e360'),
+new CompositeCost(1, new ConstantCost('1e810'),
+new CompositeCost(1, new ConstantCost('1e1050'),
+new ConstantCost('1e1200'))))));
+const getb = (level) => level / 2;
 const bMarginTerm = BigNumber.from(1/100);
 
-const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
+const w1Cost = new StepwiseCost(new ExponentialCost(12000, Math.log2(100)/3),
 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
@@ -155,7 +157,7 @@ const w2Cost = new ExponentialCost(1e5, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const w3Cost = new ExponentialCost(BigNumber.TEN.sqrt() *
-BigNumber.from('1e599'), BigNumber.from('1e30').log2());
+BigNumber.from('1e600'), BigNumber.from('1e30').log2());
 const getw3 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
@@ -795,8 +797,8 @@ var init = () =>
     A bee.
     */
     {
-        let getDesc = (level) => `b=2^{${level}}`;;
-        let getInfo = (level) => `b=${getb(level).toString(0)}`;
+        let getDesc = (level) => getInfo(level);
+        let getInfo = (level) => `b=${getb(level).toString()}`;
         b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
@@ -1006,12 +1008,12 @@ var tick = (elapsedTime, multiplier) =>
             let dr = tmpZ[0] - zResult[0];
             let di = tmpZ[1] - zResult[1];
             dTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
-            derivCurrency.value += dTerm * BigNumber.TWO.pow(bTerm) *
-            w1Term * w2Term * w3Term * bonus;
+            derivCurrency.value += dTerm.pow(bTerm) * w1Term * w2Term * w3Term *
+            bonus;
             if(blackholeMs.level && t >= 14 && !dTerm.isZero)
             {
                 let d = (tmpZ[2] - zResult[2]) * derivRes;
-                bhdt = zResult[2] / d;
+                let bhdt = zResult[2] / d;
                 // Not very accurate this way but eh (xdd)
                 if(searchingRewind && bhdt < 0)
                 {
@@ -1031,7 +1033,7 @@ var tick = (elapsedTime, multiplier) =>
         zTerm = BigNumber.from(zResult[2]).abs();
 
         normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-        (zTerm/bTerm + bMarginTerm);
+        (zTerm / BigNumber.TWO.pow(bTerm) + bMarginTerm);
     }
     else
     {
@@ -1044,10 +1046,10 @@ var tick = (elapsedTime, multiplier) =>
             bhdTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
             bhzTerm = BigNumber.from(zResult[2]).abs();
         }
-        derivCurrency.value += bhdTerm * BigNumber.TWO.pow(bTerm) *
-        w1Term * w2Term * w3Term * bonus;
+        derivCurrency.value += bhdTerm.pow(bTerm) * w1Term * w2Term * w3Term *
+        bonus;
         normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-        (bhzTerm/bTerm + bMarginTerm);
+        (bhzTerm / BigNumber.TWO.pow(bTerm) + bMarginTerm);
     }
 
     theory.invalidateTertiaryEquation();
@@ -1182,15 +1184,15 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t{\\mkern 1mu}c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? ` w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-2}}`;
+    ${derivMs.level ? ` w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/2^{b}+10^{-2}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 66;
         return rhoPart;
     }
-    let omegaPart = `\\,\\dot{\\delta}=2^bw_1
+    let omegaPart = `\\,\\dot{\\delta}=w_1
     ${w2Ms.level ? 'w_2' : ''}${w3Perma.level ? 'w_3' : ''}\\times
-    |\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
+    |\\zeta '(\\textstyle\\frac{1}{2}+it)|^b`;
     theory.primaryEquationHeight = 75;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }

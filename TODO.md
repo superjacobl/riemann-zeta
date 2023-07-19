@@ -3,7 +3,7 @@
 - [ ] Glen's response
   - [ ] I don't know of a straightforward way to compute the derivative of zeta(s). I did a quick search online and nothing jumped out at me.
   - [ ] For the integral of zeta's modulus on the critical line, |Z(t)|, I would suggest Simpson's rule. |Z(t)| is reasonably well behaved and I think Simpson's Rule would work well, and is fast.
-  - [ ] Finding the nearest zero of Z(t) to a given value t_0 is not an easy question, but my first thought is to use Newton's method to find a zero t_1, then scan the interval [t_0,t_1] for other zeros.
+  - [x] Finding the nearest zero of Z(t) to a given value t_0 is not an easy question, but my first thought is to use Newton's method to find a zero t_1, then scan the interval [t_0,t_1] for other zeros.
   - [ ] Improving computational efficiency of the Riemann Siegel algorithm has been studied [for example, see https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=4e9ff7dd91cf62892bab9156d30cf5014c4b48ce], but I don't know of any easy to implement formulas. Theorem 1 in the paper cited gives the new formula, but it seems rather complicated.
 
 - [ ] BH saves last zero passed through for easier sucking
