@@ -93,7 +93,7 @@ var authors = 'propfeds, Eylanding\nMartin_mc, previous maintainer\n\n' +
 var version = 0.4;
 
 const versionName = 'v0.4';
-const workInProgress = true;
+const workInProgress = false;
 
 let terms = 0;
 let pubTime = 0;
@@ -198,7 +198,7 @@ const locStrings =
         half: '\\text{half}',
         condition: '\\text{{if }}{{{0}}}',
         blackhole: 'Unleash a black hole',
-        blackholeInfo: 'Attracts {0} to the nearest zero of {1} (backwards)',
+        blackholeInfo: 'Pulls {0} backwards to the nearest zero of {1}',
         rotationLock:
         [
             'Unlock graph',
@@ -285,7 +285,7 @@ const locStrings =
         half: '\\text{một nửa}',
         condition: '\\text{{khi }}{{{0}}}',
         blackhole: 'Giải phóng hố đen',
-        // blackholeInfo: 'Giảm {0} khi {1} tiến tới gốc toạ độ',
+        blackholeInfo: 'Kéo {0} ngược lại tới không điểm gần nhất của {1}',
         rotationLock:
         [
             'Mở khoá đồ thị',
@@ -968,8 +968,7 @@ var updateAvailability = () =>
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
     w3.isAvailable = w3Perma.level > 0;
-    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
-    w2Ms.level > 0;
+    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel && w2Ms.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
