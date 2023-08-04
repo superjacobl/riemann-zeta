@@ -221,7 +221,7 @@ const locStrings =
         pubTime: '出版时间：{0}',
         terms: '黎曼-西格尔项：{0}',
         blackhole: '释放一个黑洞',
-        // blackholeInfo: '随着 {1} 越来越接近原点 (0,0)，减少 {0}',
+        blackholeInfo: '将 {0} 拉至于离 {1} 最接近的零',
         rotationLock:
         [
             '解锁图形',
@@ -241,7 +241,7 @@ const locStrings =
         pubTime: '出版時間：{0}',
         terms: '黎曼-西格爾項：{0}',
         blackhole: '釋放一個黑洞',
-        // blackholeInfo: '隨著 {1} 越來越接近原點 (0,0)，減少 {0}',
+        blackholeInfo: '將 {0} 拉至於離 {1} 最接近的零',
         rotationLock:
         [
             '解鎖圖形',
@@ -261,7 +261,7 @@ const locStrings =
         pubTime: 'Tiempo: {0}',
         terms: 'Terminos de Riemann-Siegel: {0}',
         blackhole: 'Desata un agujero negro',
-        // blackholeInfo: 'Decrece {0} cuando {1} se acerca al origen',
+        blackholeInfo: 'Atrae {0} hacia atrás al cero más cercano de {1}',
         rotationLock:
         [
             'Desbloquear gráfica',
