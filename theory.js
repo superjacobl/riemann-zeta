@@ -85,25 +85,28 @@ Trong lí thuyết này, chúng ta sẽ khám phá hàm zeta trên đường th�
 
     return descs[language] || descs.en;
 }
-var authors = 'Martin_mc, original theory idea\nEylanding, physicist with an ' +
-'eye patch\npropfeds, mixing & mastering engineer\n\nThanks to:\nGlen Pugh, ' +
-'for the Riemann-Siegel formula implementation\nXLII, for teaching the ' +
-'ancient Sim language\nSneaky, Gen & Gaunter, for maths consultation & other ' +
-'suggestions\n\nTranslations:\nChinese, by Omega_3301\nSpanish, by Jooo#0529';
-var version = 0.34;
+var authors = 'propfeds, Eylanding\nMartin_mc, previous maintainer\n\n' +
+'Thanks to:\nGlen Pugh, for the Riemann-Siegel formula implementation\nXLII, ' +
+'for teaching the ancient Sim language\nSneaky, Gen & Gaunter, for maths ' +
+'consultation & other suggestions\n\nTranslations:\nOmega_3301 - 简体中文、' +
+'繁體中文\nJooo#0529 - Español\npropfeds - Tiếng Việt';
+var version = 0.4;
 
-const versionName = 'v0.3.4';
+const versionName = 'v0.4';
 const workInProgress = false;
 
-let gameOffline = false;
+let terms = 0;
 let pubTime = 0;
 let t = 0;
 let t_dot = 0;
-let terms = 0;
-let zTerm = BigNumber.from(1.4603545088095868);
-let derivTerm = BigNumber.ZERO;
-let rCoord = -1.4603545088095868;
-let iCoord = 0;
+let zResult = [-1.4603545088095868, 0, 1.4603545088095868];
+let zTerm = BigNumber.from(zResult[2]);
+let dTerm = BigNumber.ZERO;
+let lastZero = 0;
+let searchingRewind = false;
+let foundZero = false;
+let bhzTerm = null;
+let bhdTerm = null;
 let quaternaryEntries =
 [
     new QuaternaryEntry('\\dot{t}', null),
@@ -114,6 +117,8 @@ let quaternaryEntries =
 const scale = 4;
 
 // All balance parameters are aggregated for ease of access
+
+const derivRes = 100000;
 
 const resolution = 4;
 const getBlackholeSpeed = (z) => Math.min(z**2 + 0.004, 1/resolution);
@@ -134,14 +139,17 @@ const getc1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 0);
 const c2Cost = new ExponentialCost(1500, 0.699 * 4);
 const getc2 = (level) => BigNumber.TWO.pow(level);
 
-const bMaxLevel = 3;
-const bCost = new CompositeCost(1, new ConstantCost(1e21),
-new ExponentialCost(BigNumber.from('1e600'), BigNumber.from('1e300').log2()));
-const getb = (level) => BigNumber.TWO.pow(level);
-const getbMarginTerm = (level) => BigNumber.TEN.pow(-getb(level));
+const bMaxLevel = 6;
+const bCost = new CompositeCost(1, new ConstantCost(1e15),
+new CompositeCost(1, new ConstantCost(BigNumber.from(1e45)),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e360')),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e810')),
+new CompositeCost(1, new ConstantCost(BigNumber.from('1e1050')),
+new ConstantCost(BigNumber.from('1e1200')))))));
+const getb = (level) => level / 2;
 const bMarginTerm = BigNumber.from(1/100);
 
-const w1Cost = new StepwiseCost(new ExponentialCost(120000, Math.log2(100)/3),
+const w1Cost = new StepwiseCost(new ExponentialCost(12000, Math.log2(100)/3),
 6);
 const getw1 = (level) => Utils.getStepwisePowerSum(level, 2, 8, 1);
 
@@ -149,7 +157,7 @@ const w2Cost = new ExponentialCost(1e5, Math.log2(10));
 const getw2 = (level) => BigNumber.TWO.pow(level);
 
 const w3Cost = new ExponentialCost(BigNumber.TEN.sqrt() *
-BigNumber.from('1e599'), BigNumber.from('1e30').log2());
+BigNumber.from('1e600'), BigNumber.from('1e30').log2());
 const getw3 = (level) => BigNumber.TWO.pow(level);
 
 const permaCosts =
@@ -190,7 +198,7 @@ const locStrings =
         half: '\\text{half}',
         condition: '\\text{{if }}{{{0}}}',
         blackhole: 'Unleash a black hole',
-        blackholeInfo: 'Decreases {0} as {1} gets closer to the origin',
+        blackholeInfo: 'Pulls {0} backwards to the nearest zero of {1}',
         rotationLock:
         [
             'Unlock graph',
@@ -213,7 +221,7 @@ const locStrings =
         pubTime: '出版时间：{0}',
         terms: '黎曼-西格尔项：{0}',
         blackhole: '释放一个黑洞',
-        blackholeInfo: '随着 {1} 越来越接近原点 (0,0)，减少 {0}',
+        blackholeInfo: '将 {0} 拉至于离 {1} 最接近的零',
         rotationLock:
         [
             '解锁图形',
@@ -233,7 +241,7 @@ const locStrings =
         pubTime: '出版時間：{0}',
         terms: '黎曼-西格爾項：{0}',
         blackhole: '釋放一個黑洞',
-        blackholeInfo: '隨著 {1} 越來越接近原點 (0,0)，減少 {0}',
+        blackholeInfo: '將 {0} 拉至於離 {1} 最接近的零',
         rotationLock:
         [
             '解鎖圖形',
@@ -253,7 +261,7 @@ const locStrings =
         pubTime: 'Tiempo: {0}',
         terms: 'Terminos de Riemann-Siegel: {0}',
         blackhole: 'Desata un agujero negro',
-        blackholeInfo: 'Decrece {0} cuando {1} se acerca al origen',
+        blackholeInfo: 'Atrae {0} hacia atrás al cero más cercano de {1}',
         rotationLock:
         [
             'Desbloquear gráfica',
@@ -265,7 +273,7 @@ const locStrings =
             'Mostrar info',
             'Ocultar info',
         ],
-        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los términos y tiempo de publicación',
+        overlayInfo: 'Alterna la presentación de Riemann-Siegel en los términos y tiempo de publicación',
     },
     vi:
     {
@@ -277,7 +285,7 @@ const locStrings =
         half: '\\text{một nửa}',
         condition: '\\text{{khi }}{{{0}}}',
         blackhole: 'Giải phóng hố đen',
-        blackholeInfo: 'Giảm {0} khi {1} tiến tới gốc toạ độ',
+        blackholeInfo: 'Kéo {0} ngược lại tới không điểm gần nhất của {1}',
         rotationLock:
         [
             'Mở khoá đồ thị',
@@ -641,6 +649,14 @@ let C = (n, z) =>
 let logLookup = [];
 let sqrtLookup = [];
 
+/**
+ * Returns the Riemann zeta function evaluated at 0.5+it, with n layers of
+ * precision. For general purposes, n=1 is smooth enough without compromising
+ * performance.
+ * 
+ * Adopted from Glendon Pugh's masters thesis, 1998:
+ * https://web.viu.ca/pughg/thesis.d/masters.thesis.pdf
+ */
 let riemannSiegelZeta = (t, n) =>
 {
     let Z = 0;
@@ -671,7 +687,9 @@ let riemannSiegelZeta = (t, n) =>
     Z += R;
     return [Z*Math.cos(th), -Z*Math.sin(th), Z];
 }
-
+/**
+ * Returns re, im and Z in an array.
+ */
 let zeta = (T) =>
 {
     let t = Math.abs(T);
@@ -787,8 +805,8 @@ var init = () =>
     A bee.
     */
     {
-        let getDesc = (level) => `b=2^{${level}}`;;
-        let getInfo = (level) => `b=${getb(level).toString(0)}`;
+        let getDesc = (level) => getInfo(level);
+        let getInfo = (level) => `b=${getb(level).toString()}`;
         b = theory.createUpgrade(3, normCurrency, bCost);
         b.getDescription = (_) => Utils.getMath(getDesc(b.level));
         b.getInfo = (amount) => Utils.getMathTo(getInfo(b.level),
@@ -922,7 +940,25 @@ var init = () =>
         blackholeMs = theory.createMilestoneUpgrade(4, 1);
         blackholeMs.description = getLoc('blackhole');
         blackholeMs.info = Localization.format(getLoc('blackholeInfo'),
-        Utils.getMath('\\dot{t}'), Utils.getMath('\\zeta(s)'));
+        Utils.getMath('t'), Utils.getMath('\\zeta(s)'));
+        blackholeMs.bought = (_) =>
+        {
+            searchingRewind = true;
+            foundZero = false;
+            bhzTerm = null;
+            bhdTerm = null;
+            if(lastZero)
+                t = lastZero;
+        }
+        blackholeMs.refunded = (_) =>
+        {
+            if(foundZero)
+                lastZero = t;
+            searchingRewind = false;
+            foundZero = false;
+            bhzTerm = null;
+            bhdTerm = null;
+        }
         blackholeMs.isAvailable = false;
     }
 
@@ -940,8 +976,7 @@ var updateAvailability = () =>
     w2Ms.isAvailable = derivMs.level > 0;
     w2.isAvailable = w2Ms.level > 0;
     w3.isAvailable = w3Perma.level > 0;
-    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel &&
-    w2Ms.level > 0;
+    blackholeMs.isAvailable = c1ExpMs.level == c1ExpMaxLevel && w2Ms.level > 0;
 }
 
 var isCurrencyVisible = (index) => (index && derivMs.level > 0) || !index;
@@ -952,10 +987,11 @@ var tick = (elapsedTime, multiplier) =>
         return;
 
     pubTime += elapsedTime;
-    t_dot = (blackholeMs.level ? getBlackholeSpeed(zTerm.toNumber()) :
-    1 / resolution);
-    let dt = t_dot * elapsedTime;
-    t += dt;
+    if(!blackholeMs.level || t < 14)
+    {
+        t_dot = 1 / resolution;
+        t += t_dot * elapsedTime;
+    }
 
     let tTerm = BigNumber.from(t);
     let bonus = BigNumber.from(elapsedTime * multiplier) *
@@ -966,22 +1002,62 @@ var tick = (elapsedTime, multiplier) =>
     let c1Term = getc1(c1.level).pow(getc1Exp(c1ExpMs.level));
     let c2Term = getc2(c2.level);
     let bTerm = getb(b.level);
-    let z = zeta(t);
-    if(derivMs.level)
-    {
-        let tmpZ = zeta(t + 0.0001);
-        let dr = tmpZ[0] - z[0];
-        let di = tmpZ[1] - z[1];
-        derivTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * 10000);
-        derivCurrency.value += derivTerm * BigNumber.TWO.pow(bTerm) * w1Term *
-        w2Term * w3Term * bonus;
-    }
-    rCoord = z[0];
-    iCoord = z[1];
-    zTerm = BigNumber.from(z[2]).abs();
 
-    normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
-    (zTerm/bTerm + bMarginTerm);
+    if(!blackholeMs.level || !foundZero)
+    {
+        let prevZ = zResult[2];
+        zResult = zeta(t);
+        if(zResult[2] * prevZ <= 0 && !game.isCalculatingOfflineProgress)
+            lastZero = t;
+        if(derivMs.level)
+        {
+            let tmpZ = zeta(t + 1 / derivRes);
+            let dr = tmpZ[0] - zResult[0];
+            let di = tmpZ[1] - zResult[1];
+            dTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
+            derivCurrency.value += dTerm.pow(bTerm) * w1Term * w2Term * w3Term *
+            bonus;
+            if(blackholeMs.level && t >= 14 && !dTerm.isZero)
+            {
+                let d = (tmpZ[2] - zResult[2]) * derivRes;
+                let bhdt = zResult[2] / d;
+                // Not very accurate this way but eh (xdd)
+                if(searchingRewind && bhdt < 0)
+                {
+                    t_dot = 1 / resolution;
+                    t += t_dot * elapsedTime;
+                }
+                else
+                {
+                    t_dot = bhdt / elapsedTime;
+                    t -= bhdt;
+                    searchingRewind = false;
+                    if(Math.abs(bhdt) < 1e-8)
+                        foundZero = true;
+                }
+            }
+        }
+        zTerm = BigNumber.from(zResult[2]).abs();
+
+        normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
+        (zTerm / BigNumber.TWO.pow(bTerm) + bMarginTerm);
+    }
+    else
+    {
+        if(!bhzTerm || !bhdTerm)
+        {
+            zResult = zeta(t);
+            let tmpZ = zeta(t + 1 / derivRes);
+            let dr = tmpZ[0] - zResult[0];
+            let di = tmpZ[1] - zResult[1];
+            bhdTerm = BigNumber.from(Math.sqrt(dr*dr + di*di) * derivRes);
+            bhzTerm = BigNumber.from(zResult[2]).abs();
+        }
+        derivCurrency.value += bhdTerm.pow(bTerm) * w1Term * w2Term * w3Term *
+        bonus;
+        normCurrency.value += tTerm * c1Term * c2Term * w1Term * bonus /
+        (bhzTerm / BigNumber.TWO.pow(bTerm) + bMarginTerm);
+    }
 
     theory.invalidateTertiaryEquation();
     theory.invalidateQuaternaryValues();
@@ -1115,15 +1191,15 @@ var getPrimaryEquation = () =>
 {
     let rhoPart = `\\dot{\\rho}=\\frac{t{\\mkern 1mu}c_1
     ${c1ExpMs.level ? `^{${getc1Exp(c1ExpMs.level)}}`: ''}c_2
-    ${derivMs.level ? ` w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/b+10^{-2}}`;
+    ${derivMs.level ? ` w_1`: ''}}{|\\zeta(\\frac{1}{2}+it)|/2^{b}+10^{-2}}`;
     if(!derivMs.level)
     {
         theory.primaryEquationHeight = 66;
         return rhoPart;
     }
-    let omegaPart = `\\,\\dot{\\delta}=2^bw_1
+    let omegaPart = `\\,\\dot{\\delta}=w_1
     ${w2Ms.level ? 'w_2' : ''}${w3Perma.level ? 'w_3' : ''}\\times
-    |\\zeta '(\\textstyle\\frac{1}{2}+it)|`;
+    |\\zeta '(\\textstyle\\frac{1}{2}+it)|^b`;
     theory.primaryEquationHeight = 75;
     return `\\begin{array}{c}${rhoPart}\\\\${omegaPart}\\end{array}`;
 }
@@ -1141,15 +1217,15 @@ var getSecondaryEquation = () =>
 
 var getTertiaryEquation = () =>
 {
-    return `|\\zeta(\\frac{1}{2}+it)|=${zTerm.toString(3)}`;
+    return `|\\zeta(\\frac{1}{2}+it)|=${(bhzTerm ?? zTerm).toString(3)}`;
 }
 
 var getQuaternaryEntries = () =>
 {
-    quaternaryEntries[0].value = t_dot.toFixed(blackholeMs.level ? 3 : 2);
+    quaternaryEntries[0].value = t_dot.toFixed(2);
     quaternaryEntries[1].value = t.toFixed(2);
     if(derivMs.level)
-        quaternaryEntries[2].value = derivTerm.toString(3);
+        quaternaryEntries[2].value = (bhdTerm ?? dTerm).toString(3);
     else
         quaternaryEntries[2].value = null;
     return quaternaryEntries;
@@ -1168,10 +1244,13 @@ var postPublish = () =>
     pubTime = 0;
     t = 0;
     t_dot = 0;
-    zTerm = BigNumber.from(1.4603545088095868);
-    derivTerm = BigNumber.ZERO;
-    rCoord = -1.4603545088095868;
-    iCoord = 0;
+    zResult = [-1.4603545088095868, 0, 1.4603545088095868];
+    zTerm = BigNumber.from(zResult[2]);
+    dTerm = BigNumber.ZERO;
+    lastZero = 0;
+    searchingRewind = false;
+    foundZero = false;
+
     theory.invalidatePrimaryEquation();
     theory.invalidateSecondaryEquation();
     theory.invalidateTertiaryEquation();
@@ -1201,7 +1280,7 @@ var setInternalState = (stateStr) =>
     theory.invalidateTertiaryEquation();
 }
 
-var get3DGraphPoint = () => new Vector3(rCoord / scale, -iCoord / scale,
+var get3DGraphPoint = () => new Vector3(zResult[0] / scale, -zResult[1] / scale,
 t / scale);
 
 var get3DGraphTranslation = () => new Vector3(0, 0, -t / scale);
