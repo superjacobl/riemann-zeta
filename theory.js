@@ -273,7 +273,7 @@ const locStrings =
             'Mostrar info',
             'Ocultar info',
         ],
-        overlayInfo: 'Alternar la presentación de Riemann-Siegel en los términos y tiempo de publicación',
+        overlayInfo: 'Alterna la presentación de Riemann-Siegel en los términos y tiempo de publicación',
     },
     vi:
     {
@@ -649,6 +649,14 @@ let C = (n, z) =>
 let logLookup = [];
 let sqrtLookup = [];
 
+/**
+ * Returns the Riemann zeta function evaluated at 0.5+it, with n layers of
+ * precision. For general purposes, n=1 is smooth enough without compromising
+ * performance.
+ * 
+ * Adopted from Glendon Pugh's masters thesis, 1998:
+ * https://web.viu.ca/pughg/thesis.d/masters.thesis.pdf
+ */
 let riemannSiegelZeta = (t, n) =>
 {
     let Z = 0;
